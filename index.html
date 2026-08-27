@@ -19,6 +19,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
+    <!-- Cabeçalho -->
     <header class="bg-indigo-600 text-white shadow-md p-4 sticky top-0 z-50">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
             <h1 id="event-title-display" class="text-xl font-bold tracking-wide">🏆 Gestor de Torneio</h1>
@@ -29,6 +30,7 @@
         </div>
     </header>
 
+    <!-- Tela de Autenticação Inicial -->
     <div id="auth-screen" class="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
         <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full space-y-4 text-center">
             <h2 class="text-lg font-bold text-slate-800">🔒 Área Restrita ADM</h2>
@@ -39,16 +41,17 @@
         </div>
     </div>
 
+    <!-- Modal de Configurações do ADM -->
     <div id="modal-config-adm" class="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full space-y-4">
             <h2 class="text-base font-bold text-slate-800">⚙️ Configurações Administrativas</h2>
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block font-semibold text-slate-600 mb-1">Nome do Evento:</label>
-                    <input type="text" id="adm-nome-evento" class="w-full border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Nome do Evento">
+                    <label class="block font-semibold text-slate-600 mb-1">Nome do Torneio:</label>
+                    <input type="text" id="adm-nome-evento" class="w-full border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Nome do Torneio">
                 </div>
                 <div>
-                    <label class="block font-semibold text-slate-600 mb-1">URL da Logo do Organizador (Opcional):</label>
+                    <label class="block font-semibold text-slate-600 mb-1">URL da Logo do Evento/Escola (Opcional):</label>
                     <input type="text" id="adm-logo-url" class="w-full border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="https://exemplo.com/logo.png">
                 </div>
                 <div>
@@ -67,8 +70,10 @@
         </div>
     </div>
 
+    <!-- Conteúdo Principal -->
     <main class="max-w-4xl mx-auto p-4 flex-grow w-full space-y-6">
 
+        <!-- Seção 1: Lista Universal de Pagamentos e Vínculo de Modalidades -->
         <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 no-print space-y-4">
             <div>
                 <h2 class="text-lg font-semibold text-indigo-900">📋 Lista Universal de Atletas & Pagamentos</h2>
@@ -86,7 +91,8 @@
             <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">Selecione as modalidades pagas por este atleta:</label>
                 <div id="checkboxes-modalidades" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 border border-slate-100 rounded-xl bg-slate-50">
-                    </div>
+                    <!-- Gerado via JavaScript -->
+                </div>
             </div>
 
             <button onclick="adicionarAtletaUniversal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-xl text-sm font-medium transition shadow-sm">Adicionar Atleta à Lista Geral</button>
@@ -94,6 +100,7 @@
             <div id="tabela-universal" class="overflow-x-auto pt-2"></div>
         </section>
 
+        <!-- Seção 2: Cadastro de Modalidades -->
         <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 no-print">
             <h2 class="text-lg font-semibold text-indigo-900 mb-4">Gerenciar Modalidades e Formatos</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
@@ -106,12 +113,14 @@
             </div>
         </section>
 
+        <!-- Container das Modalidades -->
         <section id="modalidades-container" class="space-y-4 no-print"></section>
 
+        <!-- Área de Impressão / Relatório Final -->
         <section id="print-area" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
             <div id="print-header-visual" class="text-center border-b border-slate-200 pb-4">
                 <h2 id="print-title" class="text-xl font-bold text-slate-800">Relatório Geral do Evento</h2>
-                <p class="text-xs text-slate-400">Resultados e pagamentos prontos para impressão ou arquivo</p>
+                <p class="text-xs text-slate-400">Resultados e chaveamentos oficiais</p>
             </div>
             
             <div class="flex justify-end no-print">
@@ -129,8 +138,9 @@
         Protegido por senha • PWA Offline Ready
     </footer>
 
+    <!-- Scripts da Lógica -->
     <script>
-        let dados = JSON.parse(localStorage.getItem('torneio_dados_v8')) || { 
+        let dados = JSON.parse(localStorage.getItem('torneio_dados_v9')) || { 
             nomeEvento: "Torneio Escolar", 
             logoUrl: "",
             atletasGeral: [], 
@@ -140,14 +150,14 @@
             admEmail: "admin@torneio.com"
         };
 
-        if (!dados.nomeEvento || dados.nomeEvento === "Olimterclasse Colégio CETS") dados.nomeEvento = "Torneio Escolar";
+        if (!dados.nomeEvento) dados.nomeEvento = "Torneio Escolar";
         if (!dados.senhaAcesso) dados.senhaAcesso = "ben2018";
         if (!dados.senhaExclusao) dados.senhaExclusao = "ben18";
         if (!dados.admEmail) dados.admEmail = "admin@torneio.com";
         if (dados.logoUrl === undefined) dados.logoUrl = "";
 
         function salvarDados(atualizarTela = true) {
-            localStorage.setItem('torneio_dados_v8', JSON.stringify(dados));
+            localStorage.setItem('torneio_dados_v9', JSON.stringify(dados));
             if (atualizarTela) {
                 renderizar();
             }
@@ -219,7 +229,7 @@
 
         function solicitarEdicaoEvento() {
             pedirSenhaExclusaoEdicao(() => {
-                let novoNome = prompt("Novo nome do evento:", dados.nomeEvento);
+                let novoNome = prompt("Novo nome do torneio:", dados.nomeEvento);
                 if (novoNome) {
                     dados.nomeEvento = novoNome;
                     salvarDados();
@@ -247,6 +257,23 @@
                 dados.atletasGeral = dados.atletasGeral.filter(a => a.id !== id);
                 salvarDados();
             });
+        }
+
+        function alternarInadimplentesModalidade(modId) {
+            let div = document.getElementById(`inadimplentes-box-${modId}`);
+            if (div.classList.contains('hidden')) {
+                div.classList.remove('hidden');
+            } else {
+                div.classList.add('hidden');
+            }
+        }
+
+        function darOkPagamentoAtleta(atletaId) {
+            let atleta = dados.atletasGeral.find(a => a.id === atletaId);
+            if (atleta) {
+                atleta.status = 'pago';
+                salvarDados();
+            }
         }
 
         function adicionarModalidade() {
@@ -325,10 +352,9 @@
 
             if (formato === 'mata-mata') {
                 if (parts.length === 3) {
-                    // Regra específica para chave de 3 (Luta 1: A x B, Luta 2: Perdedor de AxB vs C, Luta 3: Vencedor AxB vs Vencedor Luta 2)
                     estrutura = [
                         { tipo: 'luta', adv1: parts[0], p1: '', adv2: parts[1], p2: '' },
-                        { tipo: 'luta', adv1: 'Perdedor (Luta 1)', p1: '', adv2: parts[2], p2: '(A Bye)' },
+                        { tipo: 'luta', adv1: 'Perdedor (Luta 1)', p1: '', adv2: parts[2], p2: '(Bye)' },
                         { tipo: 'luta', adv1: 'Vencedor (Luta 1)', p1: '', adv2: 'Vencedor (Luta 2)', p2: '' }
                     ];
                 } else {
@@ -343,26 +369,6 @@
                         estrutura.push({ tipo: 'luta', time1: parts[i], pl1: '', time2: parts[j], pl2: '' });
                     }
                 }
-            } else if (formato === 'raias') {
-                let sequenciaConfig = prompt("Quantidade de atletas por bateria separadas por vírgula (Ex: 3, 4):", "3");
-                if (!sequenciaConfig) return;
-
-                let tamanhosBaterias = sequenciaConfig.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0);
-                if (tamanhosBaterias.length === 0) return alert('Configuração inválida.');
-
-                let indiceAtleta = 0;
-                let baterias = [];
-
-                for (let b = 0; b < tamanhosBaterias.length; b++) {
-                    let raiasBateria = [];
-                    for (let r = 0; r < tamanhosBaterias[b]; r++) {
-                        let nomeAtleta = indiceAtleta < parts.length ? parts[indiceAtleta] : '— (Vazia)';
-                        raiasBateria.push({ raia: r + 1, atleta: nomeAtleta, tempoOuColocacao: '' });
-                        indiceAtleta++;
-                    }
-                    baterias.push(raiasBateria);
-                }
-                estrutura = baterias;
             }
 
             mod.formato = formato;
@@ -379,12 +385,6 @@
         function atualizarPlacarPontos(modId, index, campo, valor) {
             let mod = dados.modalidades.find(m => m.id === modId);
             mod.estrutura[index][campo] = valor;
-            salvarDados(false);
-        }
-
-        function atualizarPlacarRaias(modId, batIndex, raiaIndex, valor) {
-            let mod = dados.modalidades.find(m => m.id === modId);
-            mod.estrutura[batIndex][raiaIndex].tempoOuColocacao = valor;
             salvarDados(false);
         }
 
@@ -426,7 +426,7 @@
                     </thead>
                     <tbody>`;
                 dados.atletasGeral.forEach(a => {
-                    let badge = a.status === 'pago' ? '<span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold">Pago</span>' : '<span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full font-semibold">Pendente</span>';
+                    let badge = a.status === 'pago' ? '<span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold">Pago 🟢</span>' : '<span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full font-semibold">Pendente 🔴</span>';
                     let modsTexto = (a.modalidades && a.modalidades.length > 0) ? a.modalidades.join(', ') : '<span class="text-slate-400 italic">Nenhuma</span>';
                     
                     html += `<tr class="border-b border-slate-100">
@@ -452,6 +452,9 @@
             }
 
             dados.modalidades.forEach(mod => {
+                // Filtrar atletas da lista universal que selecionaram esta modalidade e estão pendentes
+                let inadimplentesMod = dados.atletasGeral.filter(a => a.modalidades && a.modalidades.includes(mod.nome) && a.status === 'pendente');
+
                 let cardHtml = `
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4">
                         <div class="flex justify-between items-center">
@@ -459,7 +462,24 @@
                                 <h3 class="font-bold text-slate-800 text-base">${mod.nome}</h3>
                                 <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded uppercase font-semibold">${mod.tipo}</span>
                             </div>
-                            <button onclick="excluirModalidade(${mod.id})" class="text-rose-500 hover:text-rose-700 text-xs font-medium">Excluir</button>
+                            <div class="flex gap-2">
+                                <button onclick="alternarInadimplentesModalidade(${mod.id})" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg font-semibold transition border border-amber-200">⚠️ Ver Inadimplentes (${inadimplentesMod.length})</button>
+                                <button onclick="excluirModalidade(${mod.id})" class="text-rose-500 hover:text-rose-700 text-xs font-medium">Excluir</button>
+                            </div>
+                        </div>
+
+                        <!-- Caixa de Inadimplentes e Checagem de Pagamento -->
+                        <div id="inadimplentes-box-${mod.id}" class="hidden bg-amber-50/60 border border-amber-200 p-3 rounded-xl space-y-2">
+                            <h4 class="text-xs font-bold text-amber-900 uppercase">Atletas com Taxa Pendente nesta Modalidade:</h4>
+                            ${inadimplentesMod.length === 0 ? '<p class="text-xs text-amber-700 italic">Nenhum atleta pendente de pagamento nesta modalidade! 🎉</p>' : 
+                                inadimplentesMod.map(atleta => `
+                                    <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-amber-100 text-xs shadow-sm">
+                                        <span class="font-medium text-slate-700">${atleta.nome}</span>
+                                        <button onclick="darOkPagamentoAtleta(${atleta.id})" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg font-semibold transition shadow-sm flex items-center gap-1">
+                                            ✅ Dar OK (Marcar Pago)
+                                        </button>
+                                    </div>
+                                `).join('')}
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-12 gap-2">
