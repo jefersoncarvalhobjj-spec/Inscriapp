@@ -140,7 +140,7 @@
 
     <!-- Scripts da Lógica -->
     <script>
-        let dados = JSON.parse(localStorage.getItem('torneio_dados_v9')) || { 
+        let dados = JSON.parse(localStorage.getItem('torneio_dados_v10')) || { 
             nomeEvento: "Torneio Escolar", 
             logoUrl: "",
             atletasGeral: [], 
@@ -157,7 +157,7 @@
         if (dados.logoUrl === undefined) dados.logoUrl = "";
 
         function salvarDados(atualizarTela = true) {
-            localStorage.setItem('torneio_dados_v9', JSON.stringify(dados));
+            localStorage.setItem('torneio_dados_v10', JSON.stringify(dados));
             if (atualizarTela) {
                 renderizar();
             }
@@ -281,7 +281,19 @@
             let tipo = document.getElementById('modalidade-tipo').value;
             if (!nome) return alert('Digite o nome da modalidade!');
 
-            dados.modalidades.push({ id: Date.now(), nome, tipo, participantes: [], estrutura: null, formato: null });
+            dados.modalidades.push({ 
+                id: Date.now(), 
+                nome, 
+                tipo, 
+                participantes: [], 
+                estrutura: null, 
+                formato: null,
+                podio: {
+                    campeao: "",
+                    vice: "",
+                    terceiros: [""]
+                }
+            });
             document.getElementById('modalidade-nome').value = '';
             salvarDados();
         }
@@ -388,6 +400,41 @@
             salvarDados(false);
         }
 
+        // Funções de Gestão do Pódio (Campeão, Vice, Terceiro Lugar com múltiplos terceiros)
+        function atualizarPodio(modId, campo, valor, indexTerceiro = null) {
+            let mod = dados.modalidades.find(m => m.id === modId);
+            if (!mod.podio) {
+                mod.podio = { campeao: "", vice: "", terceiros: [""] };
+            }
+            if (campo === 'campeao') {
+                mod.podio.campeao = valor;
+            } else if (campo === 'vice') {
+                mod.podio.vice = valor;
+            } else if (campo === 'terceiro') {
+                mod.podio.terceiros[indexTerceiro] = valor;
+            }
+            salvarDados(false);
+        }
+
+        function adicionarTerceiroLugar(modId) {
+            let mod = dados.modalidades.find(m => m.id === modId);
+            if (!mod.podio) {
+                mod.podio = { campeao: "", vice: "", terceiros: [""] };
+            }
+            mod.podio.terceiros.push("");
+            salvarDados();
+        }
+
+        function removerTerceiroLugar(modId, index) {
+            let mod = dados.modalidades.find(m => m.id === modId);
+            if (mod.podio && mod.podio.terceiros.length > 1) {
+                mod.podio.terceiros.splice(index, 1);
+                salvarDados();
+            } else {
+                alert("É necessário manter pelo menos um campo de 3º Lugar.");
+            }
+        }
+
         function renderizar() {
             document.getElementById('event-title-display').innerText = `🏆 ${dados.nomeEvento}`;
             
@@ -452,8 +499,10 @@
             }
 
             dados.modalidades.forEach(mod => {
-                // Filtrar atletas da lista universal que selecionaram esta modalidade e estão pendentes
                 let inadimplentesMod = dados.atletasGeral.filter(a => a.modalidades && a.modalidades.includes(mod.nome) && a.status === 'pendente');
+                if (!mod.podio) {
+                    mod.podio = { campeao: "", vice: "", terceiros: [""] };
+                }
 
                 let cardHtml = `
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4">
@@ -539,6 +588,36 @@
                     }
                     cardHtml += `</div>`;
                 }
+
+                // Seção de Pódio (Campeão, Vice e Múltiplos Terceiros Lugares)
+                cardHtml += `
+                    <div class="mt-4 pt-3 border-t border-slate-200 space-y-3 bg-amber-50/40 p-3 rounded-xl border">
+                        <h4 class="text-xs font-bold text-amber-900 uppercase">🥇 Pódio / Premiação da Modalidade</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">🏆 1º Lugar (Campeão):</label>
+                                <input type="text" value="${mod.podio.campeao || ''}" oninput="atualizarPodio(${mod.id}, 'campeao', this.value)" placeholder="Nome do Campeão" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">🥈 2º Lugar (Vice-Campeão):</label>
+                                <input type="text" value="${mod.podio.vice || ''}" oninput="atualizarPodio(${mod.id}, 'vice', this.value)" placeholder="Nome do Vice-Campeão" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+                            </div>
+                        </div>
+                        <div class="space-y-2 pt-1">
+                            <div class="flex justify-between items-center">
+                                <label class="block text-[11px] font-semibold text-slate-600">🥉 3º Lugar (Permite múltiplos/empates):</label>
+                                <button onclick="adicionarTerceiroLugar(${mod.id})" class="bg-amber-600 hover:bg-amber-700 text-white text-[10px] px-2.5 py-1 rounded-lg font-semibold transition shadow-sm">+ Adicionar outro 3º Lugar</button>
+                            </div>
+                            ${mod.podio.terceiros.map((terc, tIdx) => `
+                                <div class="flex gap-2 items-center">
+                                    <input type="text" value="${terc || ''}" oninput="atualizarPodio(${mod.id}, 'terceiro', this.value, ${tIdx})" placeholder="Nome do 3º Lugar #${tIdx + 1}" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+                                    ${mod.podio.terceiros.length > 1 ? `<button onclick="removerTerceiroLugar(${mod.id}, ${tIdx})" class="text-rose-500 hover:text-rose-700 text-xs font-bold px-2 py-1">✕</button>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+
                 cardHtml += `</div>`;
                 modContainer.innerHTML += cardHtml;
 
@@ -555,7 +634,7 @@
 
                 if (mod.estrutura && mod.formato) {
                     relSec += `<h4 class="font-bold text-xs text-slate-700 uppercase tracking-wider mb-2 bg-slate-100 p-1.5 rounded">Chaves Oficiais</h4>`;
-                    relSec += `<div class="space-y-2">`;
+                    relSec += `<div class="space-y-2 mb-3">`;
                     
                     mod.estrutura.forEach(j => {
                         let t1 = j.adv1 || j.time1;
@@ -575,6 +654,19 @@
                     });
                     relSec += `</div>`;
                 }
+
+                // Relatório de Pódio
+                if (mod.podio && (mod.podio.campeao || mod.podio.vice || mod.podio.terceiros.some(t => t))) {
+                    relSec += `
+                        <div class="bg-amber-50/50 border border-amber-200 p-3 rounded-xl text-xs space-y-1 mt-2">
+                            <h4 class="font-bold text-amber-900 uppercase">🏆 Pódio Oficial</h4>
+                            ${mod.podio.campeao ? `<p><strong>🥇 1º Lugar:</strong> ${mod.podio.campeao}</p>` : ''}
+                            ${mod.podio.vice ? `<p><strong>🥈 2º Lugar:</strong> ${mod.podio.vice}</p>` : ''}
+                            ${mod.podio.terceiros.filter(t => t).length > 0 ? `<p><strong>🥉 3º Lugar:</strong> ${mod.podio.terceiros.filter(t => t).join(' / ')}</p>` : ''}
+                        </div>
+                    `;
+                }
+
                 relSec += `</div>`;
                 relHtml += relSec;
             });
