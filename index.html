@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Torneios Pro</title>
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Cabeçalho -->
+    <header class="bg-indigo-600 text-white shadow-md p-4 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 id="event-title-display" class="text-xl font-bold tracking-wide">🏆 Gestor de Torneio</h1>
+            <div class="flex gap-2">
+                <button onclick="abrirConfigAdmin()" class="bg-indigo-700 hover:bg-indigo-800 text-xs px-3 py-1.5 rounded-lg font-medium transition">Config. ADM</button>
+                <button onclick="solicitarEdicaoEvento()" class="bg-indigo-700 hover:bg-indigo-800 text-xs px-3 py-1.5 rounded-lg font-medium transition">Editar Evento</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tela de Autenticação Inicial -->
+    <div id="auth-screen" class="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+        <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full space-y-4 text-center">
+            <h2 class="text-lg font-bold text-slate-800">🔒 Área Restrita ADM</h2>
+            <p class="text-xs text-slate-500">Digite sua senha de acesso ao sistema</p>
+            <input type="password" id="senha-input" placeholder="Senha de Acesso" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-center text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <button onclick="verificarLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2 text-sm font-medium transition shadow-sm">Entrar no Sistema</button>
+            <button onclick="esqueciSenhaAcesso()" class="text-xs text-indigo-600 hover:underline pt-1 block w-full">Esqueci minha senha de acesso</button>
+        </div>
+    </div>
+
+    <!-- Modal de Configurações do ADM -->
+    <div id="modal-config-adm" class="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full space-y-4">
+            <h2 class="text-base font-bold text-slate-800">⚙️ Configurações Administrativas</h2>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Nome do Evento:</label>
+                    <input type="text" id="adm-nome-evento" class="w-full border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Nome do Evento">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">URL da Logo do Organizador (Opcional):</label>
+                    <input type="text" id="adm-logo-url" class="w-full border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="https://exemplo.com/logo.png">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">E-mail do Administrador:</label>
+                    <input type="email" id="adm-email-input" class="w-full border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="seu-email@exemplo.com">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Nova Senha de Exclusão/Avançada:</label>
+                    <input type="password" id="adm-nova-senha-exclusao" class="w-full border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Nova senha">
+                </div>
+            </div>
+            <div class="flex gap-2 pt-2">
+                <button onclick="salvarConfigAdmin()" class="flex-grow bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl text-xs font-medium transition">Salvar Alterações</button>
+                <button onclick="fecharConfigAdmin()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-xl text-xs font-medium transition">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <main class="max-w-4xl mx-auto p-4 flex-grow w-full space-y-6">
+
+        <!-- Seção 1: Lista Universal de Pagamentos e Vínculo de Modalidades -->
+        <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 no-print space-y-4">
+            <div>
+                <h2 class="text-lg font-semibold text-indigo-900">📋 Lista Universal de Atletas & Pagamentos</h2>
+                <p class="text-xs text-slate-500">Cadastre o atleta, defina o status do pagamento e escolha quais modalidades ele vai pagar e disputar.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input type="text" id="universal-nome" placeholder="Nome Completo do Atleta" class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <select id="universal-pago" class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="pago">Taxa Paga 🟢</option>
+                    <option value="pendente">Taxa Pendente 🔴</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Selecione as modalidades pagas por este atleta:</label>
+                <div id="checkboxes-modalidades" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 border border-slate-100 rounded-xl bg-slate-50">
+                    <!-- Gerado via JavaScript -->
+                </div>
+            </div>
+
+            <button onclick="adicionarAtletaUniversal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-xl text-sm font-medium transition shadow-sm">Adicionar Atleta à Lista Geral</button>
+
+            <div id="tabela-universal" class="overflow-x-auto pt-2"></div>
+        </section>
+
+        <!-- Seção 2: Cadastro de Modalidades -->
+        <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 no-print">
+            <h2 class="text-lg font-semibold text-indigo-900 mb-4">Gerenciar Modalidades e Formatos</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                <input type="text" id="modalidade-nome" placeholder="Modalidade (Ex: Futsal, Natação)" class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <select id="modalidade-tipo" class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="individual">Individual</option>
+                    <option value="grupo">Grupo / Equipe (ex: Futsal)</option>
+                </select>
+                <button onclick="adicionarModalidade()" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2 text-sm font-medium transition shadow-sm">Criar Modalidade</button>
+            </div>
+        </section>
+
+        <!-- Container das Modalidades -->
+        <section id="modalidades-container" class="space-y-4 no-print"></section>
+
+        <!-- Área de Impressão / Relatório Final -->
+        <section id="print-area" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+            <div id="print-header-visual" class="text-center border-b border-slate-200 pb-4">
+                <h2 id="print-title" class="text-xl font-bold text-slate-800">Relatório Geral do Evento</h2>
+                <p class="text-xs text-slate-400">Resultados e pagamentos prontos para impressão ou arquivo</p>
+            </div>
+            
+            <div class="flex justify-end no-print">
+                <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-2">
+                    🖨️ Imprimir / Salvar PDF
+                </button>
+            </div>
+
+            <div id="relatorio-conteudo" class="space-y-6 text-sm"></div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-4 text-xs text-slate-400 no-print">
+        Protegido por senha • PWA Offline Ready
+    </footer>
+
+    <!-- Scripts da Lógica -->
+    <script>
+        let dados = JSON.parse(localStorage.getItem('torneio_dados_v7')) || { 
+            nomeEvento: "Meu Torneio Esportivo", 
+            logoUrl: "",
+            atletasGeral: [], 
+            modalidades: [],
+            senhaAcesso: "ben2018",
+            senhaExclusao: "ben18",
+            admEmail: "admin@torneio.com"
+        };
+
+        if (!dados.nomeEvento || dados.nomeEvento === "Olimterclasse Colégio CETS") dados.nomeEvento = "Meu Torneio Esportivo";
+        if (!dados.senhaAcesso) dados.senhaAcesso = "ben2018";
+        if (!dados.senhaExclusao) dados.senhaExclusao = "ben18";
+        if (!dados.admEmail) dados.admEmail = "admin@torneio.com";
+        if (dados.logoUrl === undefined) dados.logoUrl = "";
+
+        function salvarDados(atualizarTela = true) {
+            localStorage.setItem('torneio_dados_v7', JSON.stringify(dados));
+            if (atualizarTela) {
+                renderizar();
+            }
+        }
+
+        function verificarLogin() {
+            let senha = document.getElementById('senha-input').value;
+            if (senha === dados.senhaAcesso) {
+                document.getElementById('auth-screen').style.display = 'none';
+            } else {
+                alert('Senha de acesso incorreta!');
+            }
+        }
+
+        function esqueciSenhaAcesso() {
+            let emailInformado = prompt("Digite o seu e-mail de Administrador cadastrado:");
+            if (!emailInformado) return;
+
+            if (emailInformado.trim().toLowerCase() === dados.admEmail.toLowerCase()) {
+                let novaSenha = prompt("E-mail confirmado! Digite a sua nova senha de acesso:");
+                if (novaSenha && novaSenha.trim() !== "") {
+                    dados.senhaAcesso = novaSenha.trim();
+                    salvarDados();
+                    alert("Senha de acesso alterada com sucesso! Faça login com a nova senha.");
+                }
+            } else {
+                alert("E-mail não reconhecido como o e-mail do Administrador.");
+            }
+        }
+
+        function abrirConfigAdmin() {
+            pedirSenhaExclusaoEdicao(() => {
+                document.getElementById('adm-nome-evento').value = dados.nomeEvento;
+                document.getElementById('adm-logo-url').value = dados.logoUrl;
+                document.getElementById('adm-email-input').value = dados.admEmail;
+                document.getElementById('adm-nova-senha-exclusao').value = '';
+                document.getElementById('modal-config-adm').classList.remove('hidden');
+            });
+        }
+
+        function fecharConfigAdmin() {
+            document.getElementById('modal-config-adm').classList.add('hidden');
+        }
+
+        function salvarConfigAdmin() {
+            let novoNomeEv = document.getElementById('adm-nome-evento').value.trim();
+            let novaLogo = document.getElementById('adm-logo-url').value.trim();
+            let novoEmail = document.getElementById('adm-email-input').value.trim();
+            let novaExclusao = document.getElementById('adm-nova-senha-exclusao').value.trim();
+
+            if (novoNomeEv) dados.nomeEvento = novoNomeEv;
+            dados.logoUrl = novaLogo;
+            if (novoEmail) dados.admEmail = novoEmail;
+            if (novaExclusao) dados.senhaExclusao = novaExclusao;
+
+            salvarDados();
+            fecharConfigAdmin();
+            alert("Configurações administrativas atualizadas com sucesso!");
+        }
+
+        function pedirSenhaExclusaoEdicao(callback) {
+            let senha = prompt("Digite a senha de Administração avançada:");
+            if (senha === dados.senhaExclusao) {
+                callback();
+            } else if (senha !== null) {
+                alert('Senha incorreta! Ação negada.');
+            }
+        }
+
+        function solicitarEdicaoEvento() {
+            pedirSenhaExclusaoEdicao(() => {
+                let novoNome = prompt("Novo nome do evento:", dados.nomeEvento);
+                if (novoNome) {
+                    dados.nomeEvento = novoNome;
+                    salvarDados();
+                }
+            });
+        }
+
+        function adicionarAtletaUniversal() {
+            let nome = document.getElementById('universal-nome').value.trim();
+            let status = document.getElementById('universal-pago').value;
+            if (!nome) return alert('Digite o nome do atleta!');
+
+            let checkboxes = document.querySelectorAll('.mod-checkbox:checked');
+            let modalidadesPagas = Array.from(checkboxes).map(cb => cb.value);
+
+            dados.atletasGeral.push({ id: Date.now(), nome, status, modalidades: modalidadesPagas });
+            document.getElementById('universal-nome').value = '';
+            
+            checkboxes.forEach(cb => cb.checked = false);
+            salvarDados();
+        }
+
+        function removerAtletaUniversal(id) {
+            pedirSenhaExclusaoEdicao(() => {
+                dados.atletasGeral = dados.atletasGeral.filter(a => a.id !== id);
+                salvarDados();
+            });
+        }
+
+        function adicionarModalidade() {
+            let nome = document.getElementById('modalidade-nome').value.trim();
+            let tipo = document.getElementById('modalidade-tipo').value;
+            if (!nome) return alert('Digite o nome da modalidade!');
+
+            dados.modalidades.push({ id: Date.now(), nome, tipo, participantes: [], estrutura: null, formato: null });
+            document.getElementById('modalidade-nome').value = '';
+            salvarDados();
+        }
+
+        function excluirModalidade(id) {
+            pedirSenhaExclusaoEdicao(() => {
+                dados.modalidades = dados.modalidades.filter(m => m.id !== id);
+                salvarDados();
+            });
+        }
+
+        function adicionarParticipanteMod(modId) {
+            let inputEquipe = document.getElementById(`input-mod-equipe-${modId}`);
+            let inputAtletas = document.getElementById(`input-mod-atletas-${modId}`);
+            let selectCat = document.getElementById(`select-mod-cat-${modId}`);
+
+            let nomeEquipe = inputEquipe.value.trim();
+            let nomesAtletas = inputAtletas.value.trim();
+            let categoria = selectCat.value;
+
+            if (!nomeEquipe) return alert('Digite o nome do time ou turma (Ex: 6º Ano A)!');
+
+            let mod = dados.modalidades.find(m => m.id === modId);
+            mod.participantes.push({ nomeEquipe, nomesAtletas, categoria });
+            
+            inputEquipe.value = '';
+            inputAtletas.value = '';
+            salvarDados();
+        }
+
+        function editarParticipanteMod(modId, index) {
+            pedirSenhaExclusaoEdicao(() => {
+                let mod = dados.modalidades.find(m => m.id === modId);
+                let p = mod.participantes[index];
+
+                let novoTime = prompt("Editar nome do Time/Turma:", p.nomeEquipe);
+                if (novoTime === null) return;
+                
+                let novosAtletas = prompt("Editar nomes dos jogadores (separados por vírgula):", p.nomesAtletas);
+                if (novosAtletas === null) return;
+
+                if (novoTime.trim() !== "") {
+                    p.nomeEquipe = novoTime.trim();
+                    p.nomesAtletas = novosAtletas.trim();
+                    salvarDados();
+                    alert("Participante/Time atualizado com sucesso!");
+                } else {
+                    alert("O nome do time não pode ficar vazio.");
+                }
+            });
+        }
+
+        function removerParticipanteMod(modId, index) {
+            pedirSenhaExclusaoEdicao(() => {
+                let mod = dados.modalidades.find(m => m.id === modId);
+                mod.participantes.splice(index, 1);
+                salvarDados();
+            });
+        }
+
+        function gerarEstrutura(modId, formato) {
+            let mod = dados.modalidades.find(m => m.id === modId);
+            if (mod.participantes.length < 1) return alert('Adicione equipes/participantes primeiro.');
+
+            let parts = mod.participantes.map(p => `${p.nomeEquipe} (${p.categoria})`);
+            
+            if (formato !== 'raias') {
+                parts.sort(() => Math.random() - 0.5);
+            }
+            
+            let estrutura = [];
+
+            if (formato === 'mata-mata') {
+                if (parts.length % 2 !== 0) parts.push('⭐ BYE (Folga)');
+                for (let i = 0; i < parts.length; i += 2) {
+                    estrutura.push({ adv1: parts[i], p1: '', adv2: parts[i+1], p2: '' });
+                }
+            } else if (formato === 'pontos') {
+                for (let i = 0; i < parts.length; i++) {
+                    for (let j = i + 1; j < parts.length; j++) {
+                        estrutura.push({ time1: parts[i], pl1: '', time2: parts[j], pl2: '' });
+                    }
+                }
+            } else if (formato === 'raias') {
+                let sequenciaConfig = prompt("Digite a quantidade de atletas/raias para cada bateria separadas por vírgula (Ex: 3, 4, 3):", "3, 4");
+                if (!sequenciaConfig) return;
+
+                let tamanhosBaterias = sequenciaConfig.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0);
+                if (tamanhosBaterias.length === 0) return alert('Configuração de baterias inválida.');
+
+                let indiceAtleta = 0;
+                let baterias = [];
+
+                for (let b = 0; b < tamanhosBaterias.length; b++) {
+                    let tamanhoBateriaAtual = tamanhosBaterias[b];
+                    let raiasBateria = [];
+                    for (let r = 0; r < tamanhoBateriaAtual; r++) {
+                        let nomeAtleta = indiceAtleta < parts.length ? parts[indiceAtleta] : '— (Vazia)';
+                        raiasBateria.push({ raia: r + 1, atleta: nomeAtleta, tempoOuColocacao: '' });
+                        indiceAtleta++;
+                    }
+                    baterias.push(raiasBateria);
+                }
+
+                while (indiceAtleta < parts.length) {
+                    let ultTamanho = tamanhosBaterias[tamanhosBaterias.length - 1] || 4;
+                    let raiasBateria = [];
+                    for (let r = 0; r < ultTamanho && indiceAtleta < parts.length; r++) {
+                        raiasBateria.push({ raia: r + 1, atleta: parts[indiceAtleta], tempoOuColocacao: '' });
+                        indiceAtleta++;
+                    }
+                    baterias.push(raiasBateria);
+                }
+
+                estrutura = baterias;
+            }
+
+            mod.formato = formato;
+            mod.estrutura = estrutura;
+            salvarDados();
+        }
+
+        function atualizarPlacarMata(modId, index, campo, valor) {
+            let mod = dados.modalidades.find(m => m.id === modId);
+            mod.estrutura[index][campo] = valor;
+            salvarDados(false);
+        }
+
+        function atualizarPlacarPontos(modId, index, campo, valor) {
+            let mod = dados.modalidades.find(m => m.id === modId);
+            mod.estrutura[index][campo] = valor;
+            salvarDados(false);
+        }
+
+        function atualizarPlacarRaias(modId, batIndex, raiaIndex, valor) {
+            let mod = dados.modalidades.find(m => m.id === modId);
+            mod.estrutura[batIndex][raiaIndex].tempoOuColocacao = valor;
+            salvarDados(false);
+        }
+
+        function renderizar() {
+            document.getElementById('event-title-display').innerText = `🏆 ${dados.nomeEvento}`;
+            
+            let printHeaderVisual = document.getElementById('print-header-visual');
+            let logoHtml = dados.logoUrl ? `<div class="mb-2"><img src="${dados.logoUrl}" alt="Logo" class="h-16 mx-auto object-contain"></div>` : '';
+            printHeaderVisual.innerHTML = `
+                ${logoHtml}
+                <h2 id="print-title" class="text-xl font-bold text-slate-800">${dados.nomeEvento}</h2>
+                <p class="text-xs text-slate-400">Resultados e pagamentos prontos para impressão ou arquivo</p>
+            `;
+
+            let checkContainer = document.getElementById('checkboxes-modalidades');
+            if (dados.modalidades.length === 0) {
+                checkContainer.innerHTML = `<span class="text-xs text-slate-400 italic">Cadastre modalidades abaixo para poder vinculá-las aos atletas.</span>`;
+            } else {
+                checkContainer.innerHTML = dados.modalidades.map(m => `
+                    <label class="flex items-center gap-1.5 text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 cursor-pointer shadow-sm">
+                        <input type="checkbox" value="${m.nome}" class="mod-checkbox text-indigo-600 rounded">
+                        <span class="font-medium text-slate-700">${m.nome}</span>
+                    </label>
+                `).join('');
+            }
+
+            let tabUniversal = document.getElementById('tabela-universal');
+            if (dados.atletasGeral.length === 0) {
+                tabUniversal.innerHTML = `<p class="text-xs text-slate-400 italic py-2">Nenhum atleta cadastrado na lista universal.</p>`;
+            } else {
+                let html = `<table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-200 text-slate-500">
+                            <th class="py-2">Atleta / Equipe</th>
+                            <th class="py-2">Modalidades Pagas</th>
+                            <th class="py-2">Status Taxa</th>
+                            <th class="py-2 text-right">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                dados.atletasGeral.forEach(a => {
+                    let badge = a.status === 'pago' ? '<span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold">Pago</span>' : '<span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full font-semibold">Pendente</span>';
+                    let modsTexto = (a.modalidades && a.modalidades.length > 0) ? a.modalidades.join(', ') : '<span class="text-slate-400 italic">Nenhuma selecionada</span>';
+                    
+                    html += `<tr class="border-b border-slate-100">
+                        <td class="py-2 font-medium text-slate-700">${a.nome}</td>
+                        <td class="py-2 text-slate-600">${modsTexto}</td>
+                        <td class="py-2">${badge}</td>
+                        <td class="py-2 text-right"><button onclick="removerAtletaUniversal(${a.id})" class="text-rose-500 hover:text-rose-700 font-medium">Remover</button></td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+                tabUniversal.innerHTML = html;
+            }
+
+            let modContainer = document.getElementById('modalidades-container');
+            let relatorioConteudo = document.getElementById('relatorio-conteudo');
+            modContainer.innerHTML = '';
+            let relHtml = '';
+
+            if (dados.modalidades.length === 0) {
+                modContainer.innerHTML = `<p class="text-center text-slate-400 py-4">Nenhuma modalidade cadastrada.</p>`;
+                relatorioConteudo.innerHTML = `<p class="text-slate-400 text-xs">Cadastre modalidades para ver o relatório gerado.</p>`;
+                return;
+            }
+
+            dados.modalidades.forEach(mod => {
+                if (mod.participantes.length > 0 && typeof mod.participantes[0] === 'string') {
+                    mod.participantes = mod.participantes.map(nomeStr => ({ nomeEquipe: nomeStr, nomesAtletas: '', categoria: 'Masculino' }));
+                } else if (mod.participantes.length > 0 && mod.participantes[0].nome && !mod.participantes[0].nomeEquipe) {
+                    mod.participantes = mod.participantes.map(p => ({ nomeEquipe: p.nome, nomesAtletas: p.serie || '', categoria: p.categoria || 'Masculino' }));
+                }
+
+                let cardHtml = `
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-base">${mod.nome}</h3>
+                                <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded uppercase font-semibold">${mod.tipo}</span>
+                            </div>
+                            <button onclick="excluirModalidade(${mod.id})" class="text-rose-500 hover:text-rose-700 text-xs font-medium">Excluir Modalidade</button>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-2">
+                            <input type="text" id="input-mod-equipe-${mod.id}" placeholder="Nome do Time (Ex: 6º Ano A)" class="md:col-span-4 border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input type="text" id="input-mod-atletas-${mod.id}" placeholder="Nomes dos Jogadores (separados por vírgula)" class="md:col-span-4 border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <select id="select-mod-cat-${mod.id}" class="md:col-span-3 border border-slate-200 rounded-xl px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="Masculino">Masculino 🚹</option>
+                                <option value="Feminino">Feminino 🚺</option>
+                                <option value="Mista">Mista ⚧️</option>
+                            </select>
+                            <button onclick="adicionarParticipanteMod(${mod.id})" class="md:col-span-1 bg-slate-800 hover:bg-slate-900 text-white py-1.5 rounded-xl text-xs font-medium">Inserir</button>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            ${mod.participantes.map((p, idx) => `
+                                <div class="bg-slate-50 text-slate-700 text-xs p-2 rounded-xl flex items-center justify-between border border-slate-200">
+                                    <div>
+                                        <span class="font-bold text-indigo-900">${p.nomeEquipe}</span> <span class="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded font-semibold ml-1">${p.categoria}</span>
+                                        <p class="text-[11px] text-slate-500 mt-0.5"><strong>Jogadores:</strong> ${p.nomesAtletas || 'Nenhum jogador listado'}</p>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button onclick="editarParticipanteMod(${mod.id}, ${idx})" class="text-indigo-600 hover:text-indigo-800 font-semibold px-2 py-1">Editar</button>
+                                        <button onclick="removerParticipanteMod(${mod.id}, ${idx})" class="text-rose-500 hover:text-rose-700 font-semibold px-2 py-1">Remover</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+                            <button onclick="gerarEstrutura(${mod.id}, 'mata-mata')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs px-3 py-2 rounded-xl font-semibold transition">Gerar Mata-Mata</button>
+                            <button onclick="gerarEstrutura(${mod.id}, 'pontos')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs px-3 py-2 rounded-xl font-semibold transition">Gerar Pontos Corridos</button>
+                            <button onclick="gerarEstrutura(${mod.id}, 'raias')" class="bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs px-3 py-2 rounded-xl font-semibold transition">🏊 Gerar Baterias Customizadas (Raias)</button>
+                        </div>
+                `;
+
+                if (mod.estrutura && mod.formato) {
+                    cardHtml += `<div class="mt-4 pt-3 border-t border-slate-100 space-y-2"><h4 class="text-xs font-bold text-slate-700 uppercase">Placares / Resultados Atuais (${mod.formato.toUpperCase()})</h4>`;
+                    
+                    if (mod.formato === 'mata-mata' || mod.formato === 'pontos') {
+                        mod.estrutura.forEach((j, index) => {
+                            let t1 = j.adv1 || j.time1;
+                            let t2 = j.adv2 || j.time2;
+                            let v1 = j.p1 !== undefined ? j.p1 : j.pl1;
+                            let v2 = j.p2 !== undefined ? j.p2 : j.pl2;
+                            let campo1 = mod.formato === 'mata-mata' ? 'p1' : 'pl1';
+                            let campo2 = mod.formato === 'mata-mata' ? 'p2' : 'pl2';
+                            let funcName = mod.formato === 'mata-mata' ? 'atualizarPlacarMata' : 'atualizarPlacarPontos';
+
+                            cardHtml += `
+                                <div class="flex items-center justify-between bg-slate-50 p-2 rounded-xl text-xs border border-slate-200">
+                                    <span class="w-4/12 font-medium truncate text-right pr-1">${t1}</span>
+                                    <input type="text" value="${v1}" oninput="${funcName}(${mod.id}, ${index}, '${campo1}', this.value)" placeholder="Placar" class="w-14 text-center border border-slate-300 rounded bg-white py-1 font-bold text-indigo-600">
+                                    <span class="text-slate-400 font-bold px-1">vs</span>
+                                    <input type="text" value="${v2}" oninput="${funcName}(${mod.id}, ${index}, '${campo2}', this.value)" placeholder="Placar" class="w-14 text-center border border-slate-300 rounded bg-white py-1 font-bold text-indigo-600">
+                                    <span class="w-4/12 font-medium truncate text-left pl-1">${t2}</span>
+                                </div>`;
+                        });
+                    } else if (mod.formato === 'raias') {
+                        mod.estrutura.forEach((bateria, batIndex) => {
+                            cardHtml += `<div class="bg-teal-50/50 p-2 rounded-xl border border-teal-100 space-y-1 mb-2">
+                                <p class="text-[11px] font-bold text-teal-900">Bateria ${batIndex + 1} (${bateria.length} Raias)</p>`;
+                            bateria.forEach((r, raiaIndex) => {
+                                cardHtml += `
+                                    <div class="flex items-center justify-between text-xs bg-white p-1.5 rounded border border-teal-100">
+                                        <span class="w-2/12 font-bold text-teal-700">Raia ${r.raia}</span>
+                                        <span class="w-6/12 truncate font-medium text-slate-700">${r.atleta}</span>
+                                        <input type="text" 
+                                               inputmode="decimal" 
+                                               value="${r.tempoOuColocacao}" 
+                                               oninput="atualizarPlacarRaias(${mod.id}, ${batIndex}, ${raiaIndex}, this.value)" 
+                                               placeholder="Tempo/Col." 
+                                               class="w-4/12 text-center border border-slate-200 rounded py-1 text-xs text-indigo-600 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500">
+                                    </div>`;
+                            });
+                            cardHtml += `</div>`;
+                        });
+                    }
+                    cardHtml += `</div>`;
+                }
+                cardHtml += `</div>`;
+                modContainer.innerHTML += cardHtml;
+
+                let relSec = `<div class="border-b border-slate-200 pb-4 mb-4">
+                    <h3 class="font-bold text-indigo-900 text-base mb-1">📌 Modalidade: ${mod.nome} <span class="text-xs font-normal text-slate-500">(${mod.tipo})</span></h3>`;
+                
+                if (mod.participantes.length > 0) {
+                    relSec += `<div class="mb-3 space-y-1"><strong class="text-xs text-slate-600">Equipes Inscritas e Jogadores:</strong>`;
+                    mod.participantes.forEach(p => {
+                        relSec += `<p class="text-xs text-slate-700 ml-2">• <strong>${p.nomeEquipe} (${p.categoria}):</strong> ${p.nomesAtletas || 'Nenhum jogador informado'}</p>`;
+                    });
+                    relSec += `</div>`;
+                }
+
+                if (mod.estrutura && mod.formato) {
+                    relSec += `<h4 class="font-bold text-xs text-slate-700 uppercase tracking-wider mb-2 bg-slate-100 p-1.5 rounded">Formato: ${mod.formato.toUpperCase()}</h4>`;
+                    relSec += `<div class="space-y-2">`;
+                    
+                    if (mod.formato === 'mata-mata' || mod.formato === 'pontos') {
+                        mod.estrutura.forEach(j => {
+                            let t1 = j.adv1 || j.time1;
+                            let t2 = j.adv2 || j.time2;
+                            let v1 = (j.p1 !== undefined ? j.p1 : j.pl1) || '___';
+                            let v2 = (j.p2 !== undefined ? j.p2 : j.pl2) || '___';
+                            relSec += `
+                                <div class="flex items-center justify-between border border-slate-200 p-2 rounded-xl bg-slate-50 text-xs">
+                                    <div class="w-5/12 font-medium text-right pr-2">${t1}</div>
+                                    <div class="w-2/12 flex items-center justify-center gap-1">
+                                        <span class="border border-slate-300 bg-white px-2 py-1 rounded text-center w-8 text-indigo-700 font-bold">${v1}</span>
+                                        <span class="text-slate-400 font-bold">x</span>
+                                        <span class="border border-slate-300 bg-white px-2 py-1 rounded text-center w-8 text-indigo-700 font-bold">${v2}</span>
+                                    </div>
+                                    <div class="w-5/12 font-medium text-left pl-2">${t2}</div>
+                                </div>`;
+                        });
+                    } else if (mod.formato === 'raias') {
+                        mod.estrutura.forEach((bateria, batIndex) => {
+                            relSec += `<div class="mb-2 border border-slate-200 p-2 rounded-xl bg-slate-50"><p class="font-bold text-xs text-slate-700 mb-1">Bateria ${batIndex + 1} (${bateria.length} Raias)</p>`;
+                            bateria.forEach(r => {
+                                let res = r.tempoOuColocacao || '__________';
+                                relSec += `<div class="flex justify-between text-xs py-0.5 border-b border-slate-100"><span><strong>Raia ${r.raia}:</strong> ${r.atleta}</span> <span>Res/Tempo: <strong>${res}</strong></span></div>`;
+                            });
+                            relSec += `</div>`;
+                        });
+                    }
+                    relSec += `</div>`;
+                } else {
+                    relSec += `<p class="text-xs text-slate-400 italic">Nenhum chaveamento gerado.</p>`;
+                }
+                relSec += `</div>`;
+                relHtml += relSec;
+            });
+
+            relatorioConteudo.innerHTML = relHtml || '<p class="text-slate-400 text-xs">Nenhum dado configurado.</p>';
+        }
+
+        renderizar();
+    </script>
+</body>
+</html>
