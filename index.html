@@ -12,8 +12,9 @@
         @media print {
             body * { visibility: hidden; }
             #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; }
             .no-print { display: none !important; }
+            body { background: white !important; }
         }
     </style>
 </head>
@@ -117,19 +118,18 @@
         <section id="modalidades-container" class="space-y-4 no-print"></section>
 
         <!-- Área de Impressão / Relatório Final -->
-        <section id="print-area" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-            <div id="print-header-visual" class="text-center border-b border-slate-200 pb-4">
-                <h2 id="print-title" class="text-xl font-bold text-slate-800">Relatório Geral do Evento</h2>
-                <p class="text-xs text-slate-400">Resultados e chaveamentos oficiais</p>
+        <section id="print-area" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-6">
+            <div id="print-header-visual" class="text-center border-b border-slate-200 pb-5">
+                <!-- Logotipo e Título atualizados para impressão elegante -->
             </div>
             
-            <div class="flex justify-end no-print">
+            <div class="flex justify-end no-print pb-2">
                 <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-2">
                     🖨️ Imprimir / Salvar PDF
                 </button>
             </div>
 
-            <div id="relatorio-conteudo" class="space-y-6 text-sm"></div>
+            <div id="relatorio-conteudo" class="space-y-8 text-sm"></div>
         </section>
 
     </main>
@@ -140,7 +140,7 @@
 
     <!-- Scripts da Lógica -->
     <script>
-        let dados = JSON.parse(localStorage.getItem('torneio_dados_v10')) || { 
+        let dados = JSON.parse(localStorage.getItem('torneio_dados_v11')) || { 
             nomeEvento: "Torneio Escolar", 
             logoUrl: "",
             atletasGeral: [], 
@@ -157,7 +157,7 @@
         if (dados.logoUrl === undefined) dados.logoUrl = "";
 
         function salvarDados(atualizarTela = true) {
-            localStorage.setItem('torneio_dados_v10', JSON.stringify(dados));
+            localStorage.setItem('torneio_dados_v11', JSON.stringify(dados));
             if (atualizarTela) {
                 renderizar();
             }
@@ -358,7 +358,8 @@
             let mod = dados.modalidades.find(m => m.id === modId);
             if (mod.participantes.length < 1) return alert('Adicione participantes primeiro.');
 
-            let parts = mod.participantes.map(p => `${p.nomeEquipe} (${p.categoria} - ${p.nomesAtletas || 'Geral'})`);
+            // Apenas o nome do atleta/equipe para as chaves oficiais, mantendo limpo
+            let parts = mod.participantes.map(p => p.nomeEquipe);
             
             let estrutura = [];
 
@@ -400,7 +401,6 @@
             salvarDados(false);
         }
 
-        // Funções de Gestão do Pódio (Campeão, Vice, Terceiro Lugar com múltiplos terceiros)
         function atualizarPodio(modId, campo, valor, indexTerceiro = null) {
             let mod = dados.modalidades.find(m => m.id === modId);
             if (!mod.podio) {
@@ -439,11 +439,11 @@
             document.getElementById('event-title-display').innerText = `🏆 ${dados.nomeEvento}`;
             
             let printHeaderVisual = document.getElementById('print-header-visual');
-            let logoHtml = dados.logoUrl ? `<div class="mb-2"><img src="${dados.logoUrl}" alt="Logo" class="h-16 mx-auto object-contain"></div>` : '';
+            let logoHtml = dados.logoUrl ? `<div class="mb-3"><img src="${dados.logoUrl}" alt="Logo" class="max-h-20 max-w-xs mx-auto object-contain rounded-lg shadow-sm"></div>` : '';
             printHeaderVisual.innerHTML = `
                 ${logoHtml}
-                <h2 id="print-title" class="text-xl font-bold text-slate-800">${dados.nomeEvento}</h2>
-                <p class="text-xs text-slate-400">Resultados e chaveamentos oficiais</p>
+                <h2 id="print-title" class="text-2xl font-bold text-slate-900 tracking-tight">${dados.nomeEvento}</h2>
+                <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mt-1">Relatório Oficial e Chaveamentos do Torneio</p>
             `;
 
             let checkContainer = document.getElementById('checkboxes-modalidades');
@@ -577,19 +577,20 @@
                             let funcName = mod.formato === 'mata-mata' ? 'atualizarPlacarMata' : 'atualizarPlacarPontos';
 
                             cardHtml += `
-                                <div class="flex items-center justify-between bg-slate-50 p-2 rounded-xl text-xs border border-slate-200">
-                                    <span class="w-4/12 font-medium truncate text-right pr-1">${t1}</span>
+                                <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl text-xs border border-slate-200 gap-2">
+                                    <span class="w-16 font-bold text-indigo-700 bg-indigo-50 px-2 py-1 rounded text-center">Luta #${index + 1}</span>
+                                    <span class="w-3/12 font-medium truncate text-right pr-1 text-slate-800">${t1}</span>
                                     <input type="text" value="${v1}" oninput="${funcName}(${mod.id}, ${index}, '${campo1}', this.value)" placeholder="Pontos" class="w-14 text-center border border-slate-300 rounded bg-white py-1 font-bold text-indigo-600">
                                     <span class="text-slate-400 font-bold px-1">vs</span>
                                     <input type="text" value="${v2}" oninput="${funcName}(${mod.id}, ${index}, '${campo2}', this.value)" placeholder="Pontos" class="w-14 text-center border border-slate-300 rounded bg-white py-1 font-bold text-indigo-600">
-                                    <span class="w-4/12 font-medium truncate text-left pl-1">${t2}</span>
+                                    <span class="w-3/12 font-medium truncate text-left pl-1 text-slate-800">${t2}</span>
                                 </div>`;
                         });
                     }
                     cardHtml += `</div>`;
                 }
 
-                // Seção de Pódio (Campeão, Vice e Múltiplos Terceiros Lugares)
+                // Seção de Pódio
                 cardHtml += `
                     <div class="mt-4 pt-3 border-t border-slate-200 space-y-3 bg-amber-50/40 p-3 rounded-xl border">
                         <h4 class="text-xs font-bold text-amber-900 uppercase">🥇 Pódio / Premiação da Modalidade</h4>
@@ -621,48 +622,52 @@
                 cardHtml += `</div>`;
                 modContainer.innerHTML += cardHtml;
 
-                let relSec = `<div class="border-b border-slate-200 pb-4 mb-4">
-                    <h3 class="font-bold text-indigo-900 text-base mb-1">📌 Modalidade: ${mod.nome}</h3>`;
+                // Relatório de Impressão Elegante
+                let relSec = `<div class="border-b border-slate-200 pb-6 mb-6 space-y-4">
+                    <div class="bg-indigo-900 text-white px-4 py-2 rounded-lg font-bold text-sm flex justify-between items-center">
+                        <span>📌 Modalidade: ${mod.nome}</span>
+                        <span class="text-xs uppercase bg-indigo-700 px-2 py-0.5 rounded">${mod.tipo}</span>
+                    </div>`;
                 
                 if (mod.participantes.length > 0) {
-                    relSec += `<div class="mb-3 space-y-1"><strong class="text-xs text-slate-600">Atletas Inscritos:</strong>`;
+                    relSec += `<div class="space-y-1"><strong class="text-xs font-bold text-slate-700 uppercase tracking-wide">Atletas Inscritos:</strong><div class="grid grid-cols-1 md:grid-cols-2 gap-1.5 pt-1">`;
                     mod.participantes.forEach(p => {
-                        relSec += `<p class="text-xs text-slate-700 ml-2">• <strong>${p.nomeEquipe} (${p.categoria}):</strong> ${p.nomesAtletas || 'Sem detalhes'}</p>`;
+                        relSec += `<div class="text-xs bg-slate-50 border border-slate-200 p-2 rounded-lg text-slate-700">• <strong>${p.nomeEquipe}</strong> <span class="text-slate-400">(${p.categoria} - ${p.nomesAtletas || 'Geral'})</span></div>`;
                     });
-                    relSec += `</div>`;
+                    relSec += `</div></div>`;
                 }
 
                 if (mod.estrutura && mod.formato) {
-                    relSec += `<h4 class="font-bold text-xs text-slate-700 uppercase tracking-wider mb-2 bg-slate-100 p-1.5 rounded">Chaves Oficiais</h4>`;
-                    relSec += `<div class="space-y-2 mb-3">`;
+                    relSec += `<div><h4 class="font-bold text-xs text-slate-700 uppercase tracking-wider mb-2 bg-slate-100 p-2 rounded">Chaves Oficiais & Lutas (${mod.formato.toUpperCase()})</h4>`;
+                    relSec += `<div class="space-y-2">`;
                     
-                    mod.estrutura.forEach(j => {
+                    mod.estrutura.forEach((j, index) => {
                         let t1 = j.adv1 || j.time1;
                         let t2 = j.adv2 || j.time2;
                         let v1 = (j.p1 !== undefined ? j.p1 : j.pl1) || '___';
                         let v2 = (j.p2 !== undefined ? j.p2 : j.pl2) || '___';
                         relSec += `
-                            <div class="flex items-center justify-between border border-slate-200 p-2 rounded-xl bg-slate-50 text-xs">
-                                <div class="w-5/12 font-medium text-right pr-2">${t1}</div>
-                                <div class="w-2/12 flex items-center justify-center gap-1">
-                                    <span class="border border-slate-300 bg-white px-2 py-1 rounded text-center w-8 text-indigo-700 font-bold">${v1}</span>
+                            <div class="flex items-center justify-between border border-slate-200 p-2.5 rounded-xl bg-white text-xs shadow-xs">
+                                <span class="font-bold text-indigo-700 bg-indigo-50 px-2 py-1 rounded">Luta #${index + 1}</span>
+                                <div class="w-4/12 font-semibold text-right pr-2 truncate text-slate-800">${t1}</div>
+                                <div class="flex items-center justify-center gap-2 bg-slate-50 px-3 py-1 rounded-lg border border-slate-200">
+                                    <span class="font-bold text-indigo-700">${v1}</span>
                                     <span class="text-slate-400 font-bold">x</span>
-                                    <span class="border border-slate-300 bg-white px-2 py-1 rounded text-center w-8 text-indigo-700 font-bold">${v2}</span>
+                                    <span class="font-bold text-indigo-700">${v2}</span>
                                 </div>
-                                <div class="w-5/12 font-medium text-left pl-2">${t2}</div>
+                                <div class="w-4/12 font-semibold text-left pl-2 truncate text-slate-800">${t2}</div>
                             </div>`;
                     });
-                    relSec += `</div>`;
+                    relSec += `</div></div>`;
                 }
 
-                // Relatório de Pódio
                 if (mod.podio && (mod.podio.campeao || mod.podio.vice || mod.podio.terceiros.some(t => t))) {
                     relSec += `
-                        <div class="bg-amber-50/50 border border-amber-200 p-3 rounded-xl text-xs space-y-1 mt-2">
-                            <h4 class="font-bold text-amber-900 uppercase">🏆 Pódio Oficial</h4>
-                            ${mod.podio.campeao ? `<p><strong>🥇 1º Lugar:</strong> ${mod.podio.campeao}</p>` : ''}
-                            ${mod.podio.vice ? `<p><strong>🥈 2º Lugar:</strong> ${mod.podio.vice}</p>` : ''}
-                            ${mod.podio.terceiros.filter(t => t).length > 0 ? `<p><strong>🥉 3º Lugar:</strong> ${mod.podio.terceiros.filter(t => t).join(' / ')}</p>` : ''}
+                        <div class="bg-amber-50/70 border border-amber-300 p-3.5 rounded-xl text-xs space-y-1.5 shadow-xs">
+                            <h4 class="font-bold text-amber-900 uppercase tracking-wider">🏆 Pódio Oficial</h4>
+                            ${mod.podio.campeao ? `<p class="text-slate-800"><strong>🥇 1º Lugar (Campeão):</strong> ${mod.podio.campeao}</p>` : ''}
+                            ${mod.podio.vice ? `<p class="text-slate-800"><strong>🥈 2º Lugar (Vice-Campeão):</strong> ${mod.podio.vice}</p>` : ''}
+                            ${mod.podio.terceiros.filter(t => t).length > 0 ? `<p class="text-slate-800"><strong>🥉 3º Lugar:</strong> ${mod.podio.terceiros.filter(t => t).join(' / ')}</p>` : ''}
                         </div>
                     `;
                 }
