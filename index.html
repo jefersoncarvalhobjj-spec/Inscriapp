@@ -19,7 +19,6 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Cabeçalho -->
     <header class="bg-indigo-600 text-white shadow-md p-4 sticky top-0 z-50">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
             <h1 id="event-title-display" class="text-xl font-bold tracking-wide">🏆 Gestor de Torneio</h1>
@@ -30,7 +29,6 @@
         </div>
     </header>
 
-    <!-- Tela de Autenticação Inicial -->
     <div id="auth-screen" class="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
         <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full space-y-4 text-center">
             <h2 class="text-lg font-bold text-slate-800">🔒 Área Restrita ADM</h2>
@@ -41,7 +39,6 @@
         </div>
     </div>
 
-    <!-- Modal de Configurações do ADM -->
     <div id="modal-config-adm" class="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full space-y-4">
             <h2 class="text-base font-bold text-slate-800">⚙️ Configurações Administrativas</h2>
@@ -70,10 +67,8 @@
         </div>
     </div>
 
-    <!-- Conteúdo Principal -->
     <main class="max-w-4xl mx-auto p-4 flex-grow w-full space-y-6">
 
-        <!-- Seção 1: Lista Universal de Pagamentos e Vínculo de Modalidades -->
         <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 no-print space-y-4">
             <div>
                 <h2 class="text-lg font-semibold text-indigo-900">📋 Lista Universal de Atletas & Pagamentos</h2>
@@ -91,8 +86,7 @@
             <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">Selecione as modalidades pagas por este atleta:</label>
                 <div id="checkboxes-modalidades" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 border border-slate-100 rounded-xl bg-slate-50">
-                    <!-- Gerado via JavaScript -->
-                </div>
+                    </div>
             </div>
 
             <button onclick="adicionarAtletaUniversal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-xl text-sm font-medium transition shadow-sm">Adicionar Atleta à Lista Geral</button>
@@ -100,23 +94,20 @@
             <div id="tabela-universal" class="overflow-x-auto pt-2"></div>
         </section>
 
-        <!-- Seção 2: Cadastro de Modalidades -->
         <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 no-print">
             <h2 class="text-lg font-semibold text-indigo-900 mb-4">Gerenciar Modalidades e Formatos</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-                <input type="text" id="modalidade-nome" placeholder="Modalidade (Ex: Futsal, Natação)" class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="text" id="modalidade-nome" placeholder="Modalidade (Ex: Jiu-Jitsu, Futsal)" class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 <select id="modalidade-tipo" class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <option value="individual">Individual</option>
-                    <option value="grupo">Grupo / Equipe (ex: Futsal)</option>
+                    <option value="individual">Individual / Luta</option>
+                    <option value="grupo">Grupo / Equipe</option>
                 </select>
                 <button onclick="adicionarModalidade()" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2 text-sm font-medium transition shadow-sm">Criar Modalidade</button>
             </div>
         </section>
 
-        <!-- Container das Modalidades -->
         <section id="modalidades-container" class="space-y-4 no-print"></section>
 
-        <!-- Área de Impressão / Relatório Final -->
         <section id="print-area" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
             <div id="print-header-visual" class="text-center border-b border-slate-200 pb-4">
                 <h2 id="print-title" class="text-xl font-bold text-slate-800">Relatório Geral do Evento</h2>
@@ -138,10 +129,9 @@
         Protegido por senha • PWA Offline Ready
     </footer>
 
-    <!-- Scripts da Lógica -->
     <script>
-        let dados = JSON.parse(localStorage.getItem('torneio_dados_v7')) || { 
-            nomeEvento: "Meu Torneio Esportivo", 
+        let dados = JSON.parse(localStorage.getItem('torneio_dados_v8')) || { 
+            nomeEvento: "Torneio Escolar", 
             logoUrl: "",
             atletasGeral: [], 
             modalidades: [],
@@ -150,14 +140,14 @@
             admEmail: "admin@torneio.com"
         };
 
-        if (!dados.nomeEvento || dados.nomeEvento === "Olimterclasse Colégio CETS") dados.nomeEvento = "Meu Torneio Esportivo";
+        if (!dados.nomeEvento || dados.nomeEvento === "Olimterclasse Colégio CETS") dados.nomeEvento = "Torneio Escolar";
         if (!dados.senhaAcesso) dados.senhaAcesso = "ben2018";
         if (!dados.senhaExclusao) dados.senhaExclusao = "ben18";
         if (!dados.admEmail) dados.admEmail = "admin@torneio.com";
         if (dados.logoUrl === undefined) dados.logoUrl = "";
 
         function salvarDados(atualizarTela = true) {
-            localStorage.setItem('torneio_dados_v7', JSON.stringify(dados));
+            localStorage.setItem('torneio_dados_v8', JSON.stringify(dados));
             if (atualizarTela) {
                 renderizar();
             }
@@ -285,7 +275,7 @@
             let nomesAtletas = inputAtletas.value.trim();
             let categoria = selectCat.value;
 
-            if (!nomeEquipe) return alert('Digite o nome do time ou turma (Ex: 6º Ano A)!');
+            if (!nomeEquipe) return alert('Digite o nome do atleta ou turma!');
 
             let mod = dados.modalidades.find(m => m.id === modId);
             mod.participantes.push({ nomeEquipe, nomesAtletas, categoria });
@@ -300,19 +290,19 @@
                 let mod = dados.modalidades.find(m => m.id === modId);
                 let p = mod.participantes[index];
 
-                let novoTime = prompt("Editar nome do Time/Turma:", p.nomeEquipe);
+                let novoTime = prompt("Editar Atleta / Equipe:", p.nomeEquipe);
                 if (novoTime === null) return;
                 
-                let novosAtletas = prompt("Editar nomes dos jogadores (separados por vírgula):", p.nomesAtletas);
+                let novosAtletas = prompt("Editar Detalhes (Série, Peso, Faixa):", p.nomesAtletas);
                 if (novosAtletas === null) return;
 
                 if (novoTime.trim() !== "") {
                     p.nomeEquipe = novoTime.trim();
                     p.nomesAtletas = novosAtletas.trim();
                     salvarDados();
-                    alert("Participante/Time atualizado com sucesso!");
+                    alert("Participante atualizado com sucesso!");
                 } else {
-                    alert("O nome do time não pode ficar vazio.");
+                    alert("O nome não pode ficar vazio.");
                 }
             });
         }
@@ -327,58 +317,51 @@
 
         function gerarEstrutura(modId, formato) {
             let mod = dados.modalidades.find(m => m.id === modId);
-            if (mod.participantes.length < 1) return alert('Adicione equipes/participantes primeiro.');
+            if (mod.participantes.length < 1) return alert('Adicione participantes primeiro.');
 
-            let parts = mod.participantes.map(p => `${p.nomeEquipe} (${p.categoria})`);
-            
-            if (formato !== 'raias') {
-                parts.sort(() => Math.random() - 0.5);
-            }
+            let parts = mod.participantes.map(p => `${p.nomeEquipe} (${p.categoria} - ${p.nomesAtletas || 'Geral'})`);
             
             let estrutura = [];
 
             if (formato === 'mata-mata') {
-                if (parts.length % 2 !== 0) parts.push('⭐ BYE (Folga)');
-                for (let i = 0; i < parts.length; i += 2) {
-                    estrutura.push({ adv1: parts[i], p1: '', adv2: parts[i+1], p2: '' });
+                if (parts.length === 3) {
+                    // Regra específica para chave de 3 (Luta 1: A x B, Luta 2: Perdedor de AxB vs C, Luta 3: Vencedor AxB vs Vencedor Luta 2)
+                    estrutura = [
+                        { tipo: 'luta', adv1: parts[0], p1: '', adv2: parts[1], p2: '' },
+                        { tipo: 'luta', adv1: 'Perdedor (Luta 1)', p1: '', adv2: parts[2], p2: '(A Bye)' },
+                        { tipo: 'luta', adv1: 'Vencedor (Luta 1)', p1: '', adv2: 'Vencedor (Luta 2)', p2: '' }
+                    ];
+                } else {
+                    if (parts.length % 2 !== 0) parts.push('⭐ BYE (Folga)');
+                    for (let i = 0; i < parts.length; i += 2) {
+                        estrutura.push({ tipo: 'luta', adv1: parts[i], p1: '', adv2: parts[i+1], p2: '' });
+                    }
                 }
             } else if (formato === 'pontos') {
                 for (let i = 0; i < parts.length; i++) {
                     for (let j = i + 1; j < parts.length; j++) {
-                        estrutura.push({ time1: parts[i], pl1: '', time2: parts[j], pl2: '' });
+                        estrutura.push({ tipo: 'luta', time1: parts[i], pl1: '', time2: parts[j], pl2: '' });
                     }
                 }
             } else if (formato === 'raias') {
-                let sequenciaConfig = prompt("Digite a quantidade de atletas/raias para cada bateria separadas por vírgula (Ex: 3, 4, 3):", "3, 4");
+                let sequenciaConfig = prompt("Quantidade de atletas por bateria separadas por vírgula (Ex: 3, 4):", "3");
                 if (!sequenciaConfig) return;
 
                 let tamanhosBaterias = sequenciaConfig.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0);
-                if (tamanhosBaterias.length === 0) return alert('Configuração de baterias inválida.');
+                if (tamanhosBaterias.length === 0) return alert('Configuração inválida.');
 
                 let indiceAtleta = 0;
                 let baterias = [];
 
                 for (let b = 0; b < tamanhosBaterias.length; b++) {
-                    let tamanhoBateriaAtual = tamanhosBaterias[b];
                     let raiasBateria = [];
-                    for (let r = 0; r < tamanhoBateriaAtual; r++) {
+                    for (let r = 0; r < tamanhosBaterias[b]; r++) {
                         let nomeAtleta = indiceAtleta < parts.length ? parts[indiceAtleta] : '— (Vazia)';
                         raiasBateria.push({ raia: r + 1, atleta: nomeAtleta, tempoOuColocacao: '' });
                         indiceAtleta++;
                     }
                     baterias.push(raiasBateria);
                 }
-
-                while (indiceAtleta < parts.length) {
-                    let ultTamanho = tamanhosBaterias[tamanhosBaterias.length - 1] || 4;
-                    let raiasBateria = [];
-                    for (let r = 0; r < ultTamanho && indiceAtleta < parts.length; r++) {
-                        raiasBateria.push({ raia: r + 1, atleta: parts[indiceAtleta], tempoOuColocacao: '' });
-                        indiceAtleta++;
-                    }
-                    baterias.push(raiasBateria);
-                }
-
                 estrutura = baterias;
             }
 
@@ -413,12 +396,12 @@
             printHeaderVisual.innerHTML = `
                 ${logoHtml}
                 <h2 id="print-title" class="text-xl font-bold text-slate-800">${dados.nomeEvento}</h2>
-                <p class="text-xs text-slate-400">Resultados e pagamentos prontos para impressão ou arquivo</p>
+                <p class="text-xs text-slate-400">Resultados e chaveamentos oficiais</p>
             `;
 
             let checkContainer = document.getElementById('checkboxes-modalidades');
             if (dados.modalidades.length === 0) {
-                checkContainer.innerHTML = `<span class="text-xs text-slate-400 italic">Cadastre modalidades abaixo para poder vinculá-las aos atletas.</span>`;
+                checkContainer.innerHTML = `<span class="text-xs text-slate-400 italic">Cadastre modalidades abaixo.</span>`;
             } else {
                 checkContainer.innerHTML = dados.modalidades.map(m => `
                     <label class="flex items-center gap-1.5 text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 cursor-pointer shadow-sm">
@@ -435,8 +418,8 @@
                 let html = `<table class="w-full text-left text-xs border-collapse">
                     <thead>
                         <tr class="border-b border-slate-200 text-slate-500">
-                            <th class="py-2">Atleta / Equipe</th>
-                            <th class="py-2">Modalidades Pagas</th>
+                            <th class="py-2">Atleta</th>
+                            <th class="py-2">Modalidades</th>
                             <th class="py-2">Status Taxa</th>
                             <th class="py-2 text-right">Ação</th>
                         </tr>
@@ -444,7 +427,7 @@
                     <tbody>`;
                 dados.atletasGeral.forEach(a => {
                     let badge = a.status === 'pago' ? '<span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold">Pago</span>' : '<span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full font-semibold">Pendente</span>';
-                    let modsTexto = (a.modalidades && a.modalidades.length > 0) ? a.modalidades.join(', ') : '<span class="text-slate-400 italic">Nenhuma selecionada</span>';
+                    let modsTexto = (a.modalidades && a.modalidades.length > 0) ? a.modalidades.join(', ') : '<span class="text-slate-400 italic">Nenhuma</span>';
                     
                     html += `<tr class="border-b border-slate-100">
                         <td class="py-2 font-medium text-slate-700">${a.nome}</td>
@@ -464,17 +447,11 @@
 
             if (dados.modalidades.length === 0) {
                 modContainer.innerHTML = `<p class="text-center text-slate-400 py-4">Nenhuma modalidade cadastrada.</p>`;
-                relatorioConteudo.innerHTML = `<p class="text-slate-400 text-xs">Cadastre modalidades para ver o relatório gerado.</p>`;
+                relatorioConteudo.innerHTML = `<p class="text-slate-400 text-xs">Cadastre modalidades para ver o relatório.</p>`;
                 return;
             }
 
             dados.modalidades.forEach(mod => {
-                if (mod.participantes.length > 0 && typeof mod.participantes[0] === 'string') {
-                    mod.participantes = mod.participantes.map(nomeStr => ({ nomeEquipe: nomeStr, nomesAtletas: '', categoria: 'Masculino' }));
-                } else if (mod.participantes.length > 0 && mod.participantes[0].nome && !mod.participantes[0].nomeEquipe) {
-                    mod.participantes = mod.participantes.map(p => ({ nomeEquipe: p.nome, nomesAtletas: p.serie || '', categoria: p.categoria || 'Masculino' }));
-                }
-
                 let cardHtml = `
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4">
                         <div class="flex justify-between items-center">
@@ -482,12 +459,12 @@
                                 <h3 class="font-bold text-slate-800 text-base">${mod.nome}</h3>
                                 <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded uppercase font-semibold">${mod.tipo}</span>
                             </div>
-                            <button onclick="excluirModalidade(${mod.id})" class="text-rose-500 hover:text-rose-700 text-xs font-medium">Excluir Modalidade</button>
+                            <button onclick="excluirModalidade(${mod.id})" class="text-rose-500 hover:text-rose-700 text-xs font-medium">Excluir</button>
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-12 gap-2">
-                            <input type="text" id="input-mod-equipe-${mod.id}" placeholder="Nome do Time (Ex: 6º Ano A)" class="md:col-span-4 border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <input type="text" id="input-mod-atletas-${mod.id}" placeholder="Nomes dos Jogadores (separados por vírgula)" class="md:col-span-4 border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input type="text" id="input-mod-equipe-${mod.id}" placeholder="Nome do Atleta (Ex: João)" class="md:col-span-4 border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input type="text" id="input-mod-atletas-${mod.id}" placeholder="Detalhes: Peso/Série (Ex: 50kg, 7º Ano)" class="md:col-span-4 border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <select id="select-mod-cat-${mod.id}" class="md:col-span-3 border border-slate-200 rounded-xl px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                 <option value="Masculino">Masculino 🚹</option>
                                 <option value="Feminino">Feminino 🚺</option>
@@ -501,7 +478,7 @@
                                 <div class="bg-slate-50 text-slate-700 text-xs p-2 rounded-xl flex items-center justify-between border border-slate-200">
                                     <div>
                                         <span class="font-bold text-indigo-900">${p.nomeEquipe}</span> <span class="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded font-semibold ml-1">${p.categoria}</span>
-                                        <p class="text-[11px] text-slate-500 mt-0.5"><strong>Jogadores:</strong> ${p.nomesAtletas || 'Nenhum jogador listado'}</p>
+                                        <p class="text-[11px] text-slate-500 mt-0.5"><strong>Detalhes:</strong> ${p.nomesAtletas || 'Nenhum'}</p>
                                     </div>
                                     <div class="flex gap-2">
                                         <button onclick="editarParticipanteMod(${mod.id}, ${idx})" class="text-indigo-600 hover:text-indigo-800 font-semibold px-2 py-1">Editar</button>
@@ -512,14 +489,13 @@
                         </div>
 
                         <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
-                            <button onclick="gerarEstrutura(${mod.id}, 'mata-mata')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs px-3 py-2 rounded-xl font-semibold transition">Gerar Mata-Mata</button>
-                            <button onclick="gerarEstrutura(${mod.id}, 'pontos')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs px-3 py-2 rounded-xl font-semibold transition">Gerar Pontos Corridos</button>
-                            <button onclick="gerarEstrutura(${mod.id}, 'raias')" class="bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs px-3 py-2 rounded-xl font-semibold transition">🏊 Gerar Baterias Customizadas (Raias)</button>
+                            <button onclick="gerarEstrutura(${mod.id}, 'mata-mata')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs px-3 py-2 rounded-xl font-semibold transition">Gerar Chave de Lutas (Mata-Mata)</button>
+                            <button onclick="gerarEstrutura(${mod.id}, 'pontos')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs px-3 py-2 rounded-xl font-semibold transition">Gerar Todos contra Todos</button>
                         </div>
                 `;
 
                 if (mod.estrutura && mod.formato) {
-                    cardHtml += `<div class="mt-4 pt-3 border-t border-slate-100 space-y-2"><h4 class="text-xs font-bold text-slate-700 uppercase">Placares / Resultados Atuais (${mod.formato.toUpperCase()})</h4>`;
+                    cardHtml += `<div class="mt-4 pt-3 border-t border-slate-100 space-y-2"><h4 class="text-xs font-bold text-slate-700 uppercase">Chaveamento / Lutas (${mod.formato.toUpperCase()})</h4>`;
                     
                     if (mod.formato === 'mata-mata' || mod.formato === 'pontos') {
                         mod.estrutura.forEach((j, index) => {
@@ -534,30 +510,11 @@
                             cardHtml += `
                                 <div class="flex items-center justify-between bg-slate-50 p-2 rounded-xl text-xs border border-slate-200">
                                     <span class="w-4/12 font-medium truncate text-right pr-1">${t1}</span>
-                                    <input type="text" value="${v1}" oninput="${funcName}(${mod.id}, ${index}, '${campo1}', this.value)" placeholder="Placar" class="w-14 text-center border border-slate-300 rounded bg-white py-1 font-bold text-indigo-600">
+                                    <input type="text" value="${v1}" oninput="${funcName}(${mod.id}, ${index}, '${campo1}', this.value)" placeholder="Pontos" class="w-14 text-center border border-slate-300 rounded bg-white py-1 font-bold text-indigo-600">
                                     <span class="text-slate-400 font-bold px-1">vs</span>
-                                    <input type="text" value="${v2}" oninput="${funcName}(${mod.id}, ${index}, '${campo2}', this.value)" placeholder="Placar" class="w-14 text-center border border-slate-300 rounded bg-white py-1 font-bold text-indigo-600">
+                                    <input type="text" value="${v2}" oninput="${funcName}(${mod.id}, ${index}, '${campo2}', this.value)" placeholder="Pontos" class="w-14 text-center border border-slate-300 rounded bg-white py-1 font-bold text-indigo-600">
                                     <span class="w-4/12 font-medium truncate text-left pl-1">${t2}</span>
                                 </div>`;
-                        });
-                    } else if (mod.formato === 'raias') {
-                        mod.estrutura.forEach((bateria, batIndex) => {
-                            cardHtml += `<div class="bg-teal-50/50 p-2 rounded-xl border border-teal-100 space-y-1 mb-2">
-                                <p class="text-[11px] font-bold text-teal-900">Bateria ${batIndex + 1} (${bateria.length} Raias)</p>`;
-                            bateria.forEach((r, raiaIndex) => {
-                                cardHtml += `
-                                    <div class="flex items-center justify-between text-xs bg-white p-1.5 rounded border border-teal-100">
-                                        <span class="w-2/12 font-bold text-teal-700">Raia ${r.raia}</span>
-                                        <span class="w-6/12 truncate font-medium text-slate-700">${r.atleta}</span>
-                                        <input type="text" 
-                                               inputmode="decimal" 
-                                               value="${r.tempoOuColocacao}" 
-                                               oninput="atualizarPlacarRaias(${mod.id}, ${batIndex}, ${raiaIndex}, this.value)" 
-                                               placeholder="Tempo/Col." 
-                                               class="w-4/12 text-center border border-slate-200 rounded py-1 text-xs text-indigo-600 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500">
-                                    </div>`;
-                            });
-                            cardHtml += `</div>`;
                         });
                     }
                     cardHtml += `</div>`;
@@ -566,50 +523,37 @@
                 modContainer.innerHTML += cardHtml;
 
                 let relSec = `<div class="border-b border-slate-200 pb-4 mb-4">
-                    <h3 class="font-bold text-indigo-900 text-base mb-1">📌 Modalidade: ${mod.nome} <span class="text-xs font-normal text-slate-500">(${mod.tipo})</span></h3>`;
+                    <h3 class="font-bold text-indigo-900 text-base mb-1">📌 Modalidade: ${mod.nome}</h3>`;
                 
                 if (mod.participantes.length > 0) {
-                    relSec += `<div class="mb-3 space-y-1"><strong class="text-xs text-slate-600">Equipes Inscritas e Jogadores:</strong>`;
+                    relSec += `<div class="mb-3 space-y-1"><strong class="text-xs text-slate-600">Atletas Inscritos:</strong>`;
                     mod.participantes.forEach(p => {
-                        relSec += `<p class="text-xs text-slate-700 ml-2">• <strong>${p.nomeEquipe} (${p.categoria}):</strong> ${p.nomesAtletas || 'Nenhum jogador informado'}</p>`;
+                        relSec += `<p class="text-xs text-slate-700 ml-2">• <strong>${p.nomeEquipe} (${p.categoria}):</strong> ${p.nomesAtletas || 'Sem detalhes'}</p>`;
                     });
                     relSec += `</div>`;
                 }
 
                 if (mod.estrutura && mod.formato) {
-                    relSec += `<h4 class="font-bold text-xs text-slate-700 uppercase tracking-wider mb-2 bg-slate-100 p-1.5 rounded">Formato: ${mod.formato.toUpperCase()}</h4>`;
+                    relSec += `<h4 class="font-bold text-xs text-slate-700 uppercase tracking-wider mb-2 bg-slate-100 p-1.5 rounded">Chaves Oficiais</h4>`;
                     relSec += `<div class="space-y-2">`;
                     
-                    if (mod.formato === 'mata-mata' || mod.formato === 'pontos') {
-                        mod.estrutura.forEach(j => {
-                            let t1 = j.adv1 || j.time1;
-                            let t2 = j.adv2 || j.time2;
-                            let v1 = (j.p1 !== undefined ? j.p1 : j.pl1) || '___';
-                            let v2 = (j.p2 !== undefined ? j.p2 : j.pl2) || '___';
-                            relSec += `
-                                <div class="flex items-center justify-between border border-slate-200 p-2 rounded-xl bg-slate-50 text-xs">
-                                    <div class="w-5/12 font-medium text-right pr-2">${t1}</div>
-                                    <div class="w-2/12 flex items-center justify-center gap-1">
-                                        <span class="border border-slate-300 bg-white px-2 py-1 rounded text-center w-8 text-indigo-700 font-bold">${v1}</span>
-                                        <span class="text-slate-400 font-bold">x</span>
-                                        <span class="border border-slate-300 bg-white px-2 py-1 rounded text-center w-8 text-indigo-700 font-bold">${v2}</span>
-                                    </div>
-                                    <div class="w-5/12 font-medium text-left pl-2">${t2}</div>
-                                </div>`;
-                        });
-                    } else if (mod.formato === 'raias') {
-                        mod.estrutura.forEach((bateria, batIndex) => {
-                            relSec += `<div class="mb-2 border border-slate-200 p-2 rounded-xl bg-slate-50"><p class="font-bold text-xs text-slate-700 mb-1">Bateria ${batIndex + 1} (${bateria.length} Raias)</p>`;
-                            bateria.forEach(r => {
-                                let res = r.tempoOuColocacao || '__________';
-                                relSec += `<div class="flex justify-between text-xs py-0.5 border-b border-slate-100"><span><strong>Raia ${r.raia}:</strong> ${r.atleta}</span> <span>Res/Tempo: <strong>${res}</strong></span></div>`;
-                            });
-                            relSec += `</div>`;
-                        });
-                    }
+                    mod.estrutura.forEach(j => {
+                        let t1 = j.adv1 || j.time1;
+                        let t2 = j.adv2 || j.time2;
+                        let v1 = (j.p1 !== undefined ? j.p1 : j.pl1) || '___';
+                        let v2 = (j.p2 !== undefined ? j.p2 : j.pl2) || '___';
+                        relSec += `
+                            <div class="flex items-center justify-between border border-slate-200 p-2 rounded-xl bg-slate-50 text-xs">
+                                <div class="w-5/12 font-medium text-right pr-2">${t1}</div>
+                                <div class="w-2/12 flex items-center justify-center gap-1">
+                                    <span class="border border-slate-300 bg-white px-2 py-1 rounded text-center w-8 text-indigo-700 font-bold">${v1}</span>
+                                    <span class="text-slate-400 font-bold">x</span>
+                                    <span class="border border-slate-300 bg-white px-2 py-1 rounded text-center w-8 text-indigo-700 font-bold">${v2}</span>
+                                </div>
+                                <div class="w-5/12 font-medium text-left pl-2">${t2}</div>
+                            </div>`;
+                    });
                     relSec += `</div>`;
-                } else {
-                    relSec += `<p class="text-xs text-slate-400 italic">Nenhum chaveamento gerado.</p>`;
                 }
                 relSec += `</div>`;
                 relHtml += relSec;
