@@ -126,7 +126,7 @@
             <div class="border-b border-slate-800 pb-3 flex justify-between items-center">
                 <div>
                     <h2 class="text-base font-bold text-white flex items-center gap-2">📋 Lista Universal de Atletas & Pagamentos</h2>
-                    <p class="text-xs text-slate-400 mt-0.5">Gerencie aqui o status das taxas (Pago/Pendente). Os nomes são incluídos automaticamente ao adicioná-los nas modalidades.</p>
+                    <p class="text-xs text-slate-400 mt-0.5">Gerencie aqui o status das taxas (Pago/Pendente) protegidos por senha de ADM.</p>
                 </div>
             </div>
             <div id="tabela-universal" class="overflow-x-auto pt-1"></div>
@@ -349,17 +349,20 @@
                 }
             });
 
-            // Opcional: remover quem foi totalmente apagado de todas as modalidades
+            // Remover quem foi totalmente apagado de todas as modalidades
             ev.atletasGeral = ev.atletasGeral.filter(ag => nomesEncontrados.has(ag.nome));
         }
 
+        // Agora protegido pela senha de Administração/Exclusão
         function alterarStatusTaxaAtleta(id) {
-            let ev = getEventoAtual();
-            let atleta = ev.atletasGeral.find(a => a.id === id);
-            if (atleta) {
-                atleta.status = atleta.status === 'pago' ? 'pendente' : 'pago';
-                salvarBanco();
-            }
+            pedirSenhaExclusaoEdicao(() => {
+                let ev = getEventoAtual();
+                let atleta = ev.atletasGeral.find(a => a.id === id);
+                if (atleta) {
+                    atleta.status = atleta.status === 'pago' ? 'pendente' : 'pago';
+                    salvarBanco();
+                }
+            });
         }
 
         function adicionarModalidade() {
@@ -637,7 +640,7 @@
                         <tr class="border-b border-slate-800 text-slate-400 font-semibold">
                             <th class="py-2.5 px-2">Participante / Atleta / Equipe</th>
                             <th class="py-2.5 px-2">Modalidade(s) Vinculada(s)</th>
-                            <th class="py-2.5 px-2 text-center">Status da Taxa (Clique para alternar)</th>
+                            <th class="py-2.5 px-2 text-center">Status da Taxa (Protegido por Senha)</th>
                         </tr>
                     </thead>
                     <tbody>`;
@@ -652,8 +655,8 @@
                     let modsTexto = modsDoAtleta.length > 0 ? modsDoAtleta.join(', ') : '<span class="text-slate-600 italic">Nenhuma</span>';
 
                     let badgeBtn = a.status === 'pago' ? 
-                        `<button onclick="alterarStatusTaxaAtleta(${a.id})" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-semibold transition">Pago 🟢 (Clique para Pendente)</button>` : 
-                        `<button onclick="alterarStatusTaxaAtleta(${a.id})" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full font-semibold transition">Pendente 🔴 (Clique para Pago)</button>`;
+                        `<button onclick="alterarStatusTaxaAtleta(${a.id})" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-semibold transition">Pago 🟢 (Exige Senha)</button>` : 
+                        `<button onclick="alterarStatusTaxaAtleta(${a.id})" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full font-semibold transition">Pendente 🔴 (Exige Senha)</button>`;
                     
                     html += `<tr class="border-b border-slate-800/60 hover:bg-slate-950/40 transition">
                         <td class="py-3 px-2 font-medium text-slate-200">${a.nome}</td>
