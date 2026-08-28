@@ -121,31 +121,15 @@
             <input type="text" id="input-busca-global" oninput="filtrarGlobal(this.value)" placeholder="Pesquisar modalidade ou atleta/time neste evento..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
         </div>
 
-        <!-- Seção 1: Lista Universal de Pagamentos e Vínculo de Modalidades -->
-        <section class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl no-print space-y-5">
-            <div class="border-b border-slate-800 pb-3">
-                <h2 class="text-base font-bold text-white flex items-center gap-2">📋 Lista Universal de Atletas & Pagamentos</h2>
-                <p class="text-xs text-slate-400 mt-0.5">Cadastre o atleta, defina o status da taxa e vincule as modalidades correspondentes neste evento.</p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                <input type="text" id="universal-nome" placeholder="Nome Completo do Atleta" class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
-                <select id="universal-pago" class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
-                    <option value="pago">Taxa Paga 🟢</option>
-                    <option value="pendente">Taxa Pendente 🔴</option>
-                </select>
-            </div>
-
-            <div class="space-y-2">
-                <label class="block text-xs font-semibold text-slate-400">Selecione as modalidades pagas por este atleta:</label>
-                <div id="checkboxes-modalidades" class="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-3 border border-slate-800 rounded-2xl bg-slate-950/50">
-                    <!-- Gerado via JavaScript -->
+        <!-- Seção 1: Lista Universal de Pagamentos (Alimentada Automaticamente pelas Modalidades) -->
+        <section class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl no-print space-y-4">
+            <div class="border-b border-slate-800 pb-3 flex justify-between items-center">
+                <div>
+                    <h2 class="text-base font-bold text-white flex items-center gap-2">📋 Lista Universal de Atletas & Pagamentos</h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Gerencie aqui o status das taxas (Pago/Pendente). Os nomes são incluídos automaticamente ao adicioná-los nas modalidades.</p>
                 </div>
             </div>
-
-            <button onclick="adicionarAtletaUniversal()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white py-3 rounded-xl text-xs font-semibold transition shadow-lg shadow-emerald-600/20">Adicionar Atleta à Lista Geral</button>
-
-            <div id="tabela-universal" class="overflow-x-auto pt-2"></div>
+            <div id="tabela-universal" class="overflow-x-auto pt-1"></div>
         </section>
 
         <!-- Seção 2: Cadastro de Modalidades -->
@@ -190,7 +174,7 @@
     <!-- Scripts da Lógica -->
     <script>
         // Estrutura Multi-Eventos (Salva no LocalStorage)
-        let bancoGeral = JSON.parse(localStorage.getItem('torneio_banco_multieventos_v1')) || {
+        let bancoGeral = JSON.parse(localStorage.getItem('torneio_banco_multieventos_v2')) || {
             eventoAtivoId: 'default_1',
             eventos: {
                 'default_1': {
@@ -244,7 +228,7 @@
         verificarSessao();
 
         function salvarBanco(atualizarTela = true) {
-            localStorage.setItem('torneio_banco_multieventos_v1', JSON.stringify(bancoGeral));
+            localStorage.setItem('torneio_banco_multieventos_v2', JSON.stringify(bancoGeral));
             if (atualizarTela) {
                 renderizar();
             }
@@ -346,39 +330,34 @@
             salvarBanco(true);
         }
 
-        function adicionarAtletaUniversal() {
+        // Sincronização automática com a Lista Universal baseada em todas as modalidades
+        function sincronizarListaUniversal() {
             let ev = getEventoAtual();
-            let nome = document.getElementById('universal-nome').value.trim();
-            let status = document.getElementById('universal-pago').value;
-            if (!nome) return alert('Digite o nome do atleta!');
+            let nomesEncontrados = new Set();
 
-            let checkboxes = document.querySelectorAll('.mod-checkbox:checked');
-            let modalidadesPagas = Array.from(checkboxes).map(cb => cb.value);
-
-            ev.atletasGeral.push({ id: Date.now(), nome, status, modalidades: modalidadesPagas });
-            document.getElementById('universal-nome').value = '';
-            checkboxes.forEach(cb => cb.checked = false);
-            salvarBanco();
-        }
-
-        function removerAtletaUniversal(id) {
-            pedirSenhaExclusaoEdicao(() => {
-                let ev = getEventoAtual();
-                ev.atletasGeral = ev.atletasGeral.filter(a => a.id !== id);
-                salvarBanco();
+            ev.modalidades.forEach(mod => {
+                mod.participantes.forEach(p => {
+                    if (p.nomeEquipe) nomesEncontrados.add(p.nomeEquipe.trim());
+                });
             });
+
+            // Adicionar novos que não estão na lista universal
+            nomesEncontrados.forEach(nome => {
+                let existe = ev.atletasGeral.find(ag => ag.nome.toLowerCase() === nome.toLowerCase());
+                if (!existe) {
+                    ev.atletasGeral.push({ id: Date.now() + Math.random(), nome: nome, status: 'pendente' });
+                }
+            });
+
+            // Opcional: remover quem foi totalmente apagado de todas as modalidades
+            ev.atletasGeral = ev.atletasGeral.filter(ag => nomesEncontrados.has(ag.nome));
         }
 
-        function alternarInadimplentesModalidade(modId) {
-            let div = document.getElementById(`inadimplentes-box-${modId}`);
-            div.classList.toggle('hidden');
-        }
-
-        function darOkPagamentoAtleta(atletaId) {
+        function alterarStatusTaxaAtleta(id) {
             let ev = getEventoAtual();
-            let atleta = ev.atletasGeral.find(a => a.id === atletaId);
+            let atleta = ev.atletasGeral.find(a => a.id === id);
             if (atleta) {
-                atleta.status = 'pago';
+                atleta.status = atleta.status === 'pago' ? 'pendente' : 'pago';
                 salvarBanco();
             }
         }
@@ -396,13 +375,14 @@
                 participantes: [], 
                 estrutura: null, 
                 formato: null,
-                raias: tipo === 'natacao' ? 4 : 0,
+                participantesPorBateria: tipo === 'natacao' ? 4 : 0,
                 bateriasNatacao: [],
                 podio: { campeao: "", vice: "", terceiros: [""] }
             };
 
             ev.modalidades.push(novaMod);
             document.getElementById('modalidade-nome').value = '';
+            sincronizarListaUniversal();
             salvarBanco();
         }
 
@@ -410,6 +390,7 @@
             pedirSenhaExclusaoEdicao(() => {
                 let ev = getEventoAtual();
                 ev.modalidades = ev.modalidades.filter(m => m.id !== id);
+                sincronizarListaUniversal();
                 salvarBanco();
             });
         }
@@ -437,6 +418,7 @@
                 inputEquipe.value = '';
                 inputAtletas.value = '';
             }
+            sincronizarListaUniversal();
             salvarBanco();
         }
 
@@ -454,6 +436,7 @@
                 if (novoTime.trim() !== "") {
                     p.nomeEquipe = novoTime.trim();
                     p.nomesAtletas = novosAtletas.trim();
+                    sincronizarListaUniversal();
                     salvarBanco();
                 }
             });
@@ -464,24 +447,31 @@
                 let ev = getEventoAtual();
                 let mod = ev.modalidades.find(m => m.id === modId);
                 mod.participantes.splice(index, 1);
+                sincronizarListaUniversal();
                 salvarBanco();
             });
         }
 
-        // Geração de Baterias para Natação
+        function atualizarParticipantesPorBateria(modId, qtd) {
+            let ev = getEventoAtual();
+            let mod = ev.modalidades.find(m => m.id === modId);
+            mod.participantesPorBateria = parseInt(qtd) || 4;
+            salvarBanco();
+        }
+
         function gerarBateriasNatacao(modId) {
             let ev = getEventoAtual();
             let mod = ev.modalidades.find(m => m.id === modId);
             if (mod.participantes.length === 0) return alert('Adicione nadadores primeiro.');
 
-            let raias = mod.raias || 4;
+            let limitePorBat = mod.participantesPorBateria || 4;
             let parts = [...mod.participantes];
             let baterias = [];
             let batAtual = [];
 
             parts.forEach((p, idx) => {
-                batAtual.push({ ...p, raia: batAtual.length + 1 });
-                if (batAtual.length === raias || idx === parts.length - 1) {
+                batAtual.push({ ...p, posicaoNaBateria: batAtual.length + 1 });
+                if (batAtual.length === limitePorBat || idx === parts.length - 1) {
                     baterias.push({ numeroBateria: baterias.length + 1, nadadores: [...batAtual] });
                     batAtual = [];
                 }
@@ -553,13 +543,6 @@
             agendarAtualizacaoAuto(modId);
         }
 
-        function atualizarRaiasNatacao(modId, qtdRaias) {
-            let ev = getEventoAtual();
-            let mod = ev.modalidades.find(m => m.id === modId);
-            mod.raias = parseInt(qtdRaias) || 4;
-            salvarBanco();
-        }
-
         function calcularTabelaPontos(mod) {
             let pontosMap = {};
             let parts = [...new Set(mod.participantes.map(p => p.nomeEquipe))];
@@ -627,6 +610,7 @@
 
         function renderizar() {
             let ev = getEventoAtual();
+            sincronizarListaUniversal();
 
             // Renderizar seletor de eventos
             let selectEv = document.getElementById('select-evento-ativo');
@@ -644,41 +628,37 @@
                 <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mt-1">Relatório Oficial, Resultados e Pódios do Torneio</p>
             `;
 
-            let checkContainer = document.getElementById('checkboxes-modalidades');
-            if (ev.modalidades.length === 0) {
-                checkContainer.innerHTML = `<span class="text-xs text-slate-500 italic">Cadastre modalidades abaixo para habilitar os vínculos.</span>`;
-            } else {
-                checkContainer.innerHTML = ev.modalidades.map(m => `
-                    <label class="flex items-center gap-2 text-xs bg-slate-900 px-3 py-2 rounded-xl border border-slate-800 cursor-pointer hover:border-slate-700 transition">
-                        <input type="checkbox" value="${m.nome}" class="mod-checkbox text-indigo-600 rounded bg-slate-950 border-slate-800">
-                        <span class="font-medium text-slate-200">${m.nome}</span>
-                    </label>
-                `).join('');
-            }
-
             let tabUniversal = document.getElementById('tabela-universal');
             if (ev.atletasGeral.length === 0) {
-                tabUniversal.innerHTML = `<p class="text-xs text-slate-500 italic py-3 text-center">Nenhum atleta cadastrado na lista universal deste evento.</p>`;
+                tabUniversal.innerHTML = `<p class="text-xs text-slate-500 italic py-3 text-center">Nenhum participante adicionado nas modalidades ainda. Cadastre participantes nas modalidades abaixo para visualizá-los aqui.</p>`;
             } else {
                 let html = `<table class="w-full text-left text-xs border-collapse">
                     <thead>
                         <tr class="border-b border-slate-800 text-slate-400 font-semibold">
-                            <th class="py-2.5 px-2">Atleta</th>
-                            <th class="py-2.5 px-2">Modalidades</th>
-                            <th class="py-2.5 px-2">Status Taxa</th>
-                            <th class="py-2.5 px-2 text-right">Ação</th>
+                            <th class="py-2.5 px-2">Participante / Atleta / Equipe</th>
+                            <th class="py-2.5 px-2">Modalidade(s) Vinculada(s)</th>
+                            <th class="py-2.5 px-2 text-center">Status da Taxa (Clique para alternar)</th>
                         </tr>
                     </thead>
                     <tbody>`;
+                
                 ev.atletasGeral.forEach(a => {
-                    let badge = a.status === 'pago' ? '<span class="text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full font-semibold">Pago 🟢</span>' : '<span class="text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 rounded-full font-semibold">Pendente 🔴</span>';
-                    let modsTexto = (a.modalidades && a.modalidades.length > 0) ? a.modalidades.join(', ') : '<span class="text-slate-600 italic">Nenhuma</span>';
+                    let modsDoAtleta = [];
+                    ev.modalidades.forEach(m => {
+                        if (m.participantes.some(p => p.nomeEquipe.toLowerCase() === a.nome.toLowerCase())) {
+                            modsDoAtleta.push(m.nome);
+                        }
+                    });
+                    let modsTexto = modsDoAtleta.length > 0 ? modsDoAtleta.join(', ') : '<span class="text-slate-600 italic">Nenhuma</span>';
+
+                    let badgeBtn = a.status === 'pago' ? 
+                        `<button onclick="alterarStatusTaxaAtleta(${a.id})" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-semibold transition">Pago 🟢 (Clique para Pendente)</button>` : 
+                        `<button onclick="alterarStatusTaxaAtleta(${a.id})" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full font-semibold transition">Pendente 🔴 (Clique para Pago)</button>`;
                     
                     html += `<tr class="border-b border-slate-800/60 hover:bg-slate-950/40 transition">
                         <td class="py-3 px-2 font-medium text-slate-200">${a.nome}</td>
                         <td class="py-3 px-2 text-slate-400">${modsTexto}</td>
-                        <td class="py-3 px-2">${badge}</td>
-                        <td class="py-3 px-2 text-right"><button onclick="removerAtletaUniversal(${a.id})" class="text-rose-400 hover:text-rose-300 font-medium transition">Remover</button></td>
+                        <td class="py-3 px-2 text-center">${badgeBtn}</td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
@@ -706,44 +686,13 @@
             let relatorioHtml = "";
 
             modsFiltradas.forEach(mod => {
-                let inadimplentesMod = [];
-                if (mod.participantes && mod.participantes.length > 0) {
-                    mod.participantes.forEach(p => {
-                        let atletaGeral = ev.atletasGeral.find(ag => ag.nome.toLowerCase() === p.nomeEquipe.toLowerCase());
-                        if (atletaGeral && atletaGeral.status === 'pendente') {
-                            inadimplentesMod.push(atletaGeral);
-                        }
-                    });
-                }
-
-                let badgeInadimplente = inadimplentesMod.length > 0 ? 
-                    `<button onclick="alternarInadimplentesModalidade(${mod.id})" class="text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2 py-1 rounded-full font-semibold transition hover:bg-rose-500/20">⚠️ ${inadimplentesMod.length} Pendente(s)</button>` : '';
-
-                let boxInadimplentesHtml = `
-                    <div id="inadimplentes-box-${mod.id}" class="hidden bg-rose-950/20 border border-rose-900/40 p-3 rounded-2xl space-y-2 text-xs">
-                        <p class="font-semibold text-rose-300">Atletas com taxa pendente nesta modalidade:</p>
-                        <div class="space-y-1">
-                            ${inadimplentesMod.map(ina => `
-                                <div class="flex justify-between items-center bg-slate-950/50 px-3 py-1.5 rounded-xl border border-rose-900/20">
-                                    <span class="text-slate-200">${ina.nome}</span>
-                                    <button onclick="darOkPagamentoAtleta(${ina.id})" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1 rounded-lg text-[10px] font-semibold transition">Dar Baixa (Pago 🟢)</button>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-
                 let participantesHtml = "";
                 if (mod.tipo === 'natacao') {
                     participantesHtml = `
                         <div class="space-y-3">
                             <div class="flex justify-between items-center bg-slate-950/60 p-3 rounded-2xl border border-slate-800">
-                                <span class="text-xs font-semibold text-slate-300">Configurar Quantidade de Raias:</span>
-                                <select onchange="atualizarRaiasNatacao(${mod.id}, this.value)" class="bg-slate-900 border border-slate-800 text-xs text-slate-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                    <option value="4" ${mod.raias === 4 ? 'selected' : ''}>4 Raias</option>
-                                    <option value="6" ${mod.raias === 6 ? 'selected' : ''}>6 Raias</option>
-                                    <option value="8" ${mod.raias === 8 ? 'selected' : ''}>8 Raias</option>
-                                </select>
+                                <span class="text-xs font-semibold text-slate-300">Participantes máximos por Bateria:</span>
+                                <input type="number" min="1" max="20" value="${mod.participantesPorBateria || 4}" oninput="atualizarParticipantesPorBateria(${mod.id}, this.value)" class="bg-slate-900 border border-slate-800 text-xs text-slate-200 rounded-xl px-3 py-1.5 w-20 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                                 <input type="text" id="input-mod-atleta-nat-${mod.id}" placeholder="Nome do Nadador" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -761,7 +710,7 @@
                         <div class="space-y-3">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                                 <input type="text" id="input-mod-equipe-${mod.id}" placeholder="${mod.tipo === 'individual' ? 'Nome do Atleta / Lutador' : 'Nome da Equipe'}" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <input type="text" id="input-mod-atletas-${mod.id}" placeholder="Integrantes / Elenco (Opcional)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <input type="text" id="input-mod-atletas-${mod.id}" placeholder="Elenco / Integrantes (Opcional)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                 <select id="select-mod-cat-${mod.id}" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                     <option value="Geral">Categoria Geral</option>
                                     <option value="Sub-15">Sub-15</option>
@@ -780,10 +729,13 @@
                     listaInscritosHtml += `<p class="text-xs text-slate-500 italic">Nenhum participante inscrito ainda.</p>`;
                 } else {
                     mod.participantes.forEach((p, idx) => {
+                        let taxaStatus = ev.atletasGeral.find(ag => ag.nome.toLowerCase() === p.nomeEquipe.toLowerCase());
+                        let badgeTaxa = taxaStatus && taxaStatus.status === 'pago' ? '<span class="text-emerald-400 font-bold ml-1">🟢 Pago</span>' : '<span class="text-rose-400 font-bold ml-1">🔴 Pendente</span>';
+
                         listaInscritosHtml += `
                             <div class="flex justify-between items-center bg-slate-950/50 border border-slate-800 px-3 py-2 rounded-xl text-xs">
                                 <div>
-                                    <span class="font-semibold text-slate-200">${p.nomeEquipe}</span>
+                                    <span class="font-semibold text-slate-200">${p.nomeEquipe}</span> ${badgeTaxa}
                                     ${p.nomesAtletas ? `<span class="text-slate-400 text-[11px] block">Elenco: ${p.nomesAtletas}</span>` : ''}
                                     <span class="text-[10px] text-indigo-400 font-medium">(${p.categoria})</span>
                                 </div>
@@ -805,15 +757,15 @@
                     if (!mod.bateriasNatacao || mod.bateriasNatacao.length === 0) {
                         bateriasHtml = `
                             <div class="p-4 bg-slate-950/40 border border-slate-800 rounded-2xl text-center space-y-3">
-                                <p class="text-xs text-slate-400">Clique para dividir os nadadores inscritos nas baterias oficiais conforme as raias:</p>
-                                <button onclick="gerarBateriasNatacao(${mod.id})" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-semibold transition">Gerar Baterias e Raias 🏊‍♂️</button>
+                                <p class="text-xs text-slate-400">Clique para dividir os nadadores inscritos nas baterias de acordo com o limite por bateria configurado:</p>
+                                <button onclick="gerarBateriasNatacao(${mod.id})" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-semibold transition">Gerar Baterias 🏊‍♂️</button>
                             </div>
                         `;
                     } else {
                         bateriasHtml = `
                             <div class="space-y-4 pt-2">
                                 <div class="flex justify-between items-center">
-                                    <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">🏊‍♂️ Baterias e Cronometragem por Raias</h4>
+                                    <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">🏊‍♂️ Baterias e Cronometragem</h4>
                                     <button onclick="gerarBateriasNatacao(${mod.id})" class="text-[10px] text-indigo-400 hover:text-indigo-300 underline">Redefinir Baterias</button>
                                 </div>
                                 <div class="space-y-3">
@@ -824,7 +776,7 @@
                                                 ${bat.nadadores.map((nad, nIdx) => `
                                                     <div class="flex justify-between items-center bg-slate-950/80 px-3 py-1.5 rounded-xl border border-slate-800/60 text-xs">
                                                         <div class="flex items-center gap-2">
-                                                            <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-bold text-indigo-300">Raia ${nad.raia}</span>
+                                                            <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-bold text-indigo-300">Pos ${nad.posicaoNaBateria}</span>
                                                             <span class="font-medium text-slate-200">${nad.nomeEquipe} <span class="text-[10px] text-slate-400">(${nad.categoria})</span></span>
                                                         </div>
                                                         <input type="text" value="${nad.tempo || ''}" oninput="atualizarTempoNadadorBateria(${mod.id}, ${bIdx}, ${nIdx}, this.value)" placeholder="00:54.20" class="bg-slate-900 border border-slate-800 text-xs text-slate-200 rounded-xl px-3 py-1 w-28 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -844,7 +796,7 @@
                         <div class="bg-slate-950/40 p-2.5 rounded-xl border border-slate-800 space-y-1 text-xs">
                             <p class="font-bold text-indigo-400">Bateria ${bat.numeroBateria}:</p>
                             <ul class="list-disc pl-4 space-y-0.5 text-slate-300">
-                                ${bat.nadadores.map(n => `<li>Raia ${n.raia} - ${n.nomeEquipe} (${n.categoria}) — Tempo: <strong>${n.tempo || 'Não informado'}</strong></li>`).join('')}
+                                ${bat.nadadores.map(n => `<li>Atleta ${n.posicaoNaBateria} - ${n.nomeEquipe} (${n.categoria}) — Tempo: <strong>${n.tempo || 'Não informado'}</strong></li>`).join('')}
                             </ul>
                         </div>
                     `).join('') : '<p class="text-xs text-slate-500 italic">Nenhuma bateria gerada.</p>';
@@ -1023,13 +975,11 @@
                             <div class="flex items-center gap-3">
                                 <h3 class="text-base font-bold text-white">${mod.nome}</h3>
                                 <span class="text-[10px] uppercase font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">${mod.tipo}</span>
-                                ${badgeInadimplente}
                             </div>
                             <div class="flex items-center gap-2">
                                 <button onclick="excluirModalidade(${mod.id})" class="text-xs text-rose-400 hover:text-rose-300 font-semibold transition">Excluir</button>
                             </div>
                         </div>
-                        ${boxInadimplentesHtml}
                         <div class="space-y-2">
                             <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">👥 Inscritos / Participantes</h4>
                             ${participantesHtml}
@@ -1049,12 +999,18 @@
                     </div>
                 ` : '';
 
+                let relatorioParticipantesTexto = mod.participantes.map(p => `
+                    <div class="border-b border-slate-800/40 py-1">
+                        <strong>${p.nomeEquipe}</strong> (${p.categoria}) ${p.nomesAtletas ? '— Elenco: ' + p.nomesAtletas : ''}
+                    </div>
+                `).join('') || 'Nenhum participante';
+
                 relatorioHtml += `
                     <div class="space-y-4 border-b border-slate-800 pb-6">
                         <h3 class="text-base font-bold text-white border-l-4 border-indigo-500 pl-3">${mod.nome} (${mod.tipo.toUpperCase()})</h3>
                         <div class="text-xs space-y-1">
-                            <p class="font-semibold text-slate-400">Participantes:</p>
-                            <p class="text-slate-300">${mod.participantes.map(p => p.nomeEquipe).join(', ') || 'Nenhum participante'}</p>
+                            <p class="font-semibold text-slate-400">Participantes e Equipes:</p>
+                            <div class="text-slate-300 space-y-1">${relatorioParticipantesTexto}</div>
                         </div>
                         ${relatorioEstruturaHtml}
                         ${relatorioPodio}
