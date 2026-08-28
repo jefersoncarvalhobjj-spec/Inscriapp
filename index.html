@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Torneios Pro - Premium</title>
-    <meta name="theme-color" content="#4f46e5">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>Gestor de Torneios Pro - Premium Edition</title>
+    <meta name="theme-color" content="#0f172a">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print {
@@ -14,16 +12,15 @@
             #print-area, #print-area * { visibility: visible; }
             #print-area { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; }
             .no-print { display: none !important; }
-            body { background: white !important; }
+            body { background: white !important; color: black !important; }
         }
-        /* Custom scrollbar para visual premium */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
 
     <!-- Cabeçalho Premium -->
     <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 text-white shadow-xl p-4 sticky top-0 z-50">
@@ -37,26 +34,23 @@
                     <span class="text-[10px] uppercase tracking-wider font-semibold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">Edição Premium</span>
                 </div>
             </div>
-            <div class="flex gap-2">
-                <button onclick="abrirConfigAdmin()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs px-3.5 py-2 rounded-xl font-medium transition shadow-sm flex items-center gap-1.5">
-                    ⚙️ Config. ADM
-                </button>
-                <button onclick="solicitarEdicaoEvento()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3.5 py-2 rounded-xl font-medium transition shadow-lg shadow-indigo-600/20 flex items-center gap-1.5">
-                    ✏️ Editar Evento
-                </button>
+            <div class="flex items-center gap-2">
+                <button onclick="abrirConfigAdmin()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs px-3 py-2 rounded-xl font-medium transition shadow-sm">⚙️ ADM</button>
+                <button onclick="solicitarEdicaoEvento()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-2 rounded-xl font-medium transition shadow-lg shadow-indigo-600/20">✏️ Editar</button>
+                <button onclick="sairDoApp()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs px-3 py-2 rounded-xl font-semibold transition">🔒 Sair</button>
             </div>
         </div>
     </header>
 
     <!-- Tela de Autenticação Inicial -->
-    <div id="auth-screen" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div id="auth-screen" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl max-w-sm w-full space-y-6 text-center">
             <div class="w-16 h-16 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-2xl mx-auto flex items-center justify-center shadow-xl shadow-indigo-600/30 text-2xl">
                 🔒
             </div>
             <div class="space-y-1">
                 <h2 class="text-lg font-bold text-white tracking-tight">Área Restrita ADM</h2>
-                <p class="text-xs text-slate-400">Insira sua credencial de acesso ao sistema</p>
+                <p class="text-xs text-slate-400">Insira sua senha de acesso ao sistema</p>
             </div>
             <input type="password" id="senha-input" placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-center text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
             <button onclick="verificarLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl py-3 text-sm font-semibold transition shadow-lg shadow-indigo-600/25">Acessar Sistema</button>
@@ -99,6 +93,12 @@
     <!-- Conteúdo Principal -->
     <main class="max-w-4xl mx-auto p-4 md:p-6 flex-grow w-full space-y-6">
 
+        <!-- Barra de Pesquisa Global (Lupa) -->
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-lg flex items-center gap-3 no-print">
+            <span class="text-lg">🔍</span>
+            <input type="text" id="input-busca-global" oninput="filtrarGlobal(this.value)" placeholder="Pesquisar modalidade ou atleta/time..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+
         <!-- Seção 1: Lista Universal de Pagamentos e Vínculo de Modalidades -->
         <section class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl no-print space-y-5">
             <div class="border-b border-slate-800 pb-3">
@@ -130,13 +130,14 @@
         <section class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl no-print space-y-4">
             <div class="border-b border-slate-800 pb-3">
                 <h2 class="text-base font-bold text-white flex items-center gap-2">⚡ Gerenciar Modalidades e Formatos</h2>
-                <p class="text-xs text-slate-400 mt-0.5">Crie disputas individuais ou esportes coletivos em formato de equipe.</p>
+                <p class="text-xs text-slate-400 mt-0.5">Crie disputas individuais, esportes coletivos em equipe ou natação com baterias.</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-                <input type="text" id="modalidade-nome" placeholder="Ex: Futsal, Jiu-Jitsu, Vôlei" class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                <input type="text" id="modalidade-nome" placeholder="Ex: Futsal, Natação, Jiu-Jitsu" class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
                 <select id="modalidade-tipo" class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
                     <option value="individual">Individual / Luta 🥋</option>
                     <option value="grupo">Grupo / Equipe ⚽</option>
+                    <option value="natacao">Natação (Baterias/Raias) 🏊‍♂️</option>
                 </select>
                 <button onclick="adicionarModalidade()" class="bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl py-2.5 text-xs font-semibold transition shadow-lg shadow-indigo-600/20">Criar Modalidade</button>
             </div>
@@ -147,9 +148,7 @@
 
         <!-- Área de Impressão / Relatório Final -->
         <section id="print-area" class="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl shadow-xl space-y-6">
-            <div id="print-header-visual" class="text-center border-b border-slate-800 pb-6">
-                <!-- Logotipo e Título atualizados para impressão elegante -->
-            </div>
+            <div id="print-header-visual" class="text-center border-b border-slate-800 pb-6"></div>
             
             <div class="flex justify-end no-print pb-2">
                 <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition shadow-lg shadow-emerald-600/20 flex items-center gap-2">
@@ -163,12 +162,12 @@
     </main>
 
     <footer class="text-center py-6 text-xs text-slate-500 no-print border-t border-slate-800/60 mt-auto">
-        Gestor de Torneios Pro • Ambiente Seguro Protegido por Senha • PWA Offline Ready
+        Gestor de Torneios Pro • Ambiente Seguro • PWA Offline Ready
     </footer>
 
     <!-- Scripts da Lógica -->
     <script>
-        let dados = JSON.parse(localStorage.getItem('torneio_dados_v12')) || { 
+        let dados = JSON.parse(localStorage.getItem('torneio_dados_v13')) || { 
             nomeEvento: "Torneio Escolar", 
             logoUrl: "",
             atletasGeral: [], 
@@ -184,20 +183,48 @@
         if (!dados.admEmail) dados.admEmail = "admin@torneio.com";
         if (dados.logoUrl === undefined) dados.logoUrl = "";
 
-        function salvarDados(atualizarTela = true) {
-            localStorage.setItem('torneio_dados_v12', JSON.stringify(dados));
-            if (atualizarTela) {
-                renderizar();
+        let timerAutoSave = null;
+        let termoBuscaGlobal = "";
+
+        // Gerenciamento de Sessão de Login
+        function verificarSessao() {
+            let logado = sessionStorage.getItem('torneio_logado');
+            if (logado !== 'true') {
+                document.getElementById('auth-screen').classList.remove('hidden');
             }
         }
 
         function verificarLogin() {
             let senha = document.getElementById('senha-input').value;
             if (senha === dados.senhaAcesso) {
-                document.getElementById('auth-screen').style.display = 'none';
+                sessionStorage.setItem('torneio_logado', 'true');
+                document.getElementById('auth-screen').classList.add('hidden');
             } else {
                 alert('Senha de acesso incorreta!');
             }
+        }
+
+        function sairDoApp() {
+            sessionStorage.removeItem('torneio_logado');
+            document.getElementById('senha-input').value = '';
+            document.getElementById('auth-screen').classList.remove('hidden');
+        }
+
+        verificarSessao();
+
+        function salvarDados(atualizarTela = true) {
+            localStorage.setItem('torneio_dados_v13', JSON.stringify(dados));
+            if (atualizarTela) {
+                renderizar();
+            }
+        }
+
+        // Atualização automática 3 segundos após digitar qualquer placar/tempo
+        function agendarAtualizacaoAuto(modId) {
+            clearTimeout(timerAutoSave);
+            timerAutoSave = setTimeout(() => {
+                salvarDados(true);
+            }, 3000);
         }
 
         function esqueciSenhaAcesso() {
@@ -209,7 +236,7 @@
                 if (novaSenha && novaSenha.trim() !== "") {
                     dados.senhaAcesso = novaSenha.trim();
                     salvarDados();
-                    alert("Senha de acesso alterada com sucesso! Faça login com a nova senha.");
+                    alert("Senha de acesso alterada com sucesso!");
                 }
             } else {
                 alert("E-mail não reconhecido como o e-mail do Administrador.");
@@ -243,7 +270,7 @@
 
             salvarDados();
             fecharConfigAdmin();
-            alert("Configurações administrativas atualizadas com sucesso!");
+            alert("Configurações atualizadas!");
         }
 
         function pedirSenhaExclusaoEdicao(callback) {
@@ -275,7 +302,6 @@
 
             dados.atletasGeral.push({ id: Date.now(), nome, status, modalidades: modalidadesPagas });
             document.getElementById('universal-nome').value = '';
-            
             checkboxes.forEach(cb => cb.checked = false);
             salvarDados();
         }
@@ -289,11 +315,7 @@
 
         function alternarInadimplentesModalidade(modId) {
             let div = document.getElementById(`inadimplentes-box-${modId}`);
-            if (div.classList.contains('hidden')) {
-                div.classList.remove('hidden');
-            } else {
-                div.classList.add('hidden');
-            }
+            div.classList.toggle('hidden');
         }
 
         function darOkPagamentoAtleta(atletaId) {
@@ -309,19 +331,19 @@
             let tipo = document.getElementById('modalidade-tipo').value;
             if (!nome) return alert('Digite o nome da modalidade!');
 
-            dados.modalidades.push({ 
+            let novaMod = { 
                 id: Date.now(), 
                 nome, 
                 tipo, 
                 participantes: [], 
                 estrutura: null, 
                 formato: null,
-                podio: {
-                    campeao: "",
-                    vice: "",
-                    terceiros: [""]
-                }
-            });
+                raias: tipo === 'natacao' ? 4 : 0,
+                bateriasNatacao: [],
+                podio: { campeao: "", vice: "", terceiros: [""] }
+            };
+
+            dados.modalidades.push(novaMod);
             document.getElementById('modalidade-nome').value = '';
             salvarDados();
         }
@@ -334,21 +356,27 @@
         }
 
         function adicionarParticipanteMod(modId) {
-            let inputEquipe = document.getElementById(`input-mod-equipe-${modId}`);
-            let inputAtletas = document.getElementById(`input-mod-atletas-${modId}`);
-            let selectCat = document.getElementById(`select-mod-cat-${modId}`);
-
-            let nomeEquipe = inputEquipe.value.trim();
-            let nomesAtletas = inputAtletas.value.trim();
-            let categoria = selectCat.value;
-
-            if (!nomeEquipe) return alert('Digite o nome do participante ou equipe!');
-
             let mod = dados.modalidades.find(m => m.id === modId);
-            mod.participantes.push({ nomeEquipe, nomesAtletas, categoria });
-            
-            inputEquipe.value = '';
-            inputAtletas.value = '';
+            if (mod.tipo === 'natacao') {
+                let nomeAtleta = document.getElementById(`input-mod-atleta-nat-${modId}`).value.trim();
+                let categoria = document.getElementById(`select-mod-cat-nat-${modId}`).value;
+                if (!nomeAtleta) return alert('Digite o nome do nadador!');
+                mod.participantes.push({ nomeEquipe: nomeAtleta, nomesAtletas: '', categoria, tempo: '' });
+                document.getElementById(`input-mod-atleta-nat-${modId}`).value = '';
+            } else {
+                let inputEquipe = document.getElementById(`input-mod-equipe-${modId}`);
+                let inputAtletas = document.getElementById(`input-mod-atletas-${modId}`);
+                let selectCat = document.getElementById(`select-mod-cat-${modId}`);
+
+                let nomeEquipe = inputEquipe.value.trim();
+                let nomesAtletas = inputAtletas.value.trim();
+                let categoria = selectCat.value;
+
+                if (!nomeEquipe) return alert('Digite o nome do participante ou equipe!');
+                mod.participantes.push({ nomeEquipe, nomesAtletas, categoria });
+                inputEquipe.value = '';
+                inputAtletas.value = '';
+            }
             salvarDados();
         }
 
@@ -357,9 +385,8 @@
                 let mod = dados.modalidades.find(m => m.id === modId);
                 let p = mod.participantes[index];
 
-                let novoTime = prompt("Editar Nome do Time / Atleta:", p.nomeEquipe);
+                let novoTime = prompt("Editar Nome / Atleta:", p.nomeEquipe);
                 if (novoTime === null) return;
-                
                 let novosAtletas = prompt("Editar Elenco / Integrantes:", p.nomesAtletas);
                 if (novosAtletas === null) return;
 
@@ -367,9 +394,6 @@
                     p.nomeEquipe = novoTime.trim();
                     p.nomesAtletas = novosAtletas.trim();
                     salvarDados();
-                    alert("Participante atualizado com sucesso!");
-                } else {
-                    alert("O nome não pode ficar vazio.");
                 }
             });
         }
@@ -392,20 +416,20 @@
             if (formato === 'mata-mata') {
                 if (parts.length === 3) {
                     estrutura = [
-                        { tipo: 'luta', adv1: parts[0], p1: '', adv2: parts[1], p2: '' },
-                        { tipo: 'luta', adv1: 'Perdedor (Luta 1)', p1: '', adv2: parts[2], p2: '(Bye)' },
-                        { tipo: 'luta', adv1: 'Vencedor (Luta 1)', p1: '', adv2: 'Vencedor (Luta 2)', p2: '' }
+                        { adv1: parts[0], p1: '', adv2: parts[1], p2: '' },
+                        { adv1: 'Perdedor (Luta 1)', p1: '', adv2: parts[2], p2: '(Bye)' },
+                        { adv1: 'Vencedor (Luta 1)', p1: '', adv2: 'Vencedor (Luta 2)', p2: '' }
                     ];
                 } else {
                     if (parts.length % 2 !== 0) parts.push('⭐ BYE (Folga)');
                     for (let i = 0; i < parts.length; i += 2) {
-                        estrutura.push({ tipo: 'luta', adv1: parts[i], p1: '', adv2: parts[i+1], p2: '' });
+                        estrutura.push({ adv1: parts[i], p1: '', adv2: parts[i+1], p2: '' });
                     }
                 }
             } else if (formato === 'pontos') {
                 for (let i = 0; i < parts.length; i++) {
                     for (let j = i + 1; j < parts.length; j++) {
-                        estrutura.push({ tipo: 'luta', time1: parts[i], pl1: '', time2: parts[j], pl2: '' });
+                        estrutura.push({ time1: parts[i], pl1: '', time2: parts[j], pl2: '' });
                     }
                 }
             }
@@ -415,38 +439,98 @@
             salvarDados();
         }
 
+        function gerarFinalPontosCorridos(modId) {
+            let mod = dados.modalidades.find(m => m.id === modId);
+            let tabela = calcularTabelaPontos(mod);
+            if (tabela.length < 2) return alert('É preciso ter pelo menos 2 times pontuando para a final.');
+            
+            let time1 = tabela[0].time;
+            let time2 = tabela[1].time;
+
+            if (!mod.finalPontos) {
+                mod.finalPontos = { time1, p1: '', time2, p2: '' };
+            } else {
+                mod.finalPontos.time1 = time1;
+                mod.finalPontos.time2 = time2;
+            }
+            salvarDados();
+        }
+
         function atualizarPlacarMata(modId, index, campo, valor) {
             let mod = dados.modalidades.find(m => m.id === modId);
             mod.estrutura[index][campo] = valor;
-            salvarDados(false);
+            agendarAtualizacaoAuto(modId);
         }
 
         function atualizarPlacarPontos(modId, index, campo, valor) {
             let mod = dados.modalidades.find(m => m.id === modId);
             mod.estrutura[index][campo] = valor;
-            salvarDados(false);
+            agendarAtualizacaoAuto(modId);
+        }
+
+        function atualizarPlacarFinal(modId, campo, valor) {
+            let mod = dados.modalidades.find(m => m.id === modId);
+            mod.finalPontos[campo] = valor;
+            agendarAtualizacaoAuto(modId);
+        }
+
+        function atualizarTempoNatacao(modId, partIndex, valorTempo) {
+            let mod = dados.modalidades.find(m => m.id === modId);
+            mod.participantes[partIndex].tempo = valorTempo;
+            agendarAtualizacaoAuto(modId);
+        }
+
+        function atualizarRaiasNatacao(modId, qtdRaias) {
+            let mod = dados.modalidades.find(m => m.id === modId);
+            mod.raias = parseInt(qtdRaias) || 4;
+            salvarDados();
+        }
+
+        function calcularTabelaPontos(mod) {
+            let pontosMap = {};
+            let parts = [...new Set(mod.participantes.map(p => p.nomeEquipe))];
+            parts.forEach(t => pontosMap[t] = { vitorias: 0, pontosGanhos: 0, saldoGols: 0 });
+
+            if (mod.estrutura) {
+                mod.estrutura.forEach(j => {
+                    let t1 = j.time1;
+                    let t2 = j.time2;
+                    let g1 = parseInt(j.pl1);
+                    let g2 = parseInt(j.pl2);
+
+                    if (!isNaN(g1) && !isNaN(g2)) {
+                        if (pontosMap[t1]) pontosMap[t1].saldoGols += (g1 - g2);
+                        if (pontosMap[t2]) pontosMap[t2].saldoGols += (g2 - g1);
+
+                        if (g1 > g2) {
+                            if (pontosMap[t1]) { pontosMap[t1].vitorias++; pontosMap[t1].pontosGanhos += 3; }
+                        } else if (g2 > g1) {
+                            if (pontosMap[t2]) { pontosMap[t2].vitorias++; pontosMap[t2].pontosGanhos += 3; }
+                        } else {
+                            if (pontosMap[t1]) pontosMap[t1].pontosGanhos += 1;
+                            if (pontosMap[t2]) pontosMap[t2].pontosGanhos += 1;
+                        }
+                    }
+                });
+            }
+
+            let resultado = Object.keys(pontosMap).map(t => ({ time: t, ...pontosMap[t] }));
+            resultado.sort((a, b) => b.pontosGanhos - a.pontosGanhos || b.vitorias - a.vitorias || b.saldoGols - a.saldoGols);
+            return resultado;
         }
 
         function atualizarPodio(modId, campo, valor, indexTerceiro = null) {
             let mod = dados.modalidades.find(m => m.id === modId);
-            if (!mod.podio) {
-                mod.podio = { campeao: "", vice: "", terceiros: [""] };
-            }
-            if (campo === 'campeao') {
-                mod.podio.campeao = valor;
-            } else if (campo === 'vice') {
-                mod.podio.vice = valor;
-            } else if (campo === 'terceiro') {
-                mod.podio.terceiros[indexTerceiro] = valor;
-            }
-            salvarDados(false);
+            if (!mod.podio) mod.podio = { campeao: "", vice: "", terceiros: [""] };
+            if (campo === 'campeao') mod.podio.campeao = valor;
+            else if (campo === 'vice') mod.podio.vice = valor;
+            else if (campo === 'terceiro') mod.podio.terceiros[indexTerceiro] = valor;
+            agendarAtualizacaoAuto(modId);
         }
 
         function adicionarTerceiroLugar(modId) {
             let mod = dados.modalidades.find(m => m.id === modId);
-            if (!mod.podio) {
-                mod.podio = { campeao: "", vice: "", terceiros: [""] };
-            }
+            if (!mod.podio) mod.podio = { campeao: "", vice: "", terceiros: [""] };
             mod.podio.terceiros.push("");
             salvarDados();
         }
@@ -456,9 +540,12 @@
             if (mod.podio && mod.podio.terceiros.length > 1) {
                 mod.podio.terceiros.splice(index, 1);
                 salvarDados();
-            } else {
-                alert("É necessário manter pelo menos um campo de 3º Lugar.");
             }
+        }
+
+        function filtrarGlobal(termo) {
+            termoBuscaGlobal = termo.toLowerCase().trim();
+            renderizar();
         }
 
         function renderizar() {
@@ -518,27 +605,29 @@
             modContainer.innerHTML = '';
             let relHtml = '';
 
-            if (dados.modalidades.length === 0) {
-                modContainer.innerHTML = `<div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl text-center text-slate-500">Nenhuma modalidade cadastrada no momento.</div>`;
-                relatorioConteudo.innerHTML = `<p class="text-slate-500 text-xs">Cadastre modalidades para gerar o relatório.</p>`;
+            let modsFiltradas = dados.modalidades.filter(m => {
+                if (!termoBuscaGlobal) return true;
+                let matchMod = m.nome.toLowerCase().includes(termoBuscaGlobal);
+                let matchPart = m.participantes.some(p => p.nomeEquipe.toLowerCase().includes(termoBuscaGlobal) || (p.nomesAtletas && p.nomesAtletas.toLowerCase().includes(termoBuscaGlobal)));
+                return matchMod || matchPart;
+            });
+
+            if (modsFiltradas.length === 0) {
+                modContainer.innerHTML = `<div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl text-center text-slate-500">Nenhuma modalidade encontrada com o termo pesquisado.</div>`;
+                relatorioConteudo.innerHTML = `<p class="text-slate-500 text-xs">Nenhum dado para exibir.</p>`;
                 return;
             }
 
-            dados.modalidades.forEach(mod => {
+            modsFiltradas.forEach(mod => {
                 let inadimplentesMod = dados.atletasGeral.filter(a => a.modalidades && a.modalidades.includes(mod.nome) && a.status === 'pendente');
-                if (!mod.podio) {
-                    mod.podio = { campeao: "", vice: "", terceiros: [""] };
-                }
-
-                let placeholderEquipe = mod.tipo === 'grupo' ? 'Nome do Time/Equipe (Ex: Os Feras)' : 'Nome do Atleta (Ex: João)';
-                let placeholderIntegrantes = mod.tipo === 'grupo' ? 'Integrantes do Time (Ex: Carlos, Pedro)' : 'Detalhes: Peso/Série (Ex: 50kg, 7º Ano)';
+                if (!mod.podio) mod.podio = { campeao: "", vice: "", terceiros: [""] };
 
                 let cardHtml = `
                     <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl space-y-4">
                         <div class="flex justify-between items-center border-b border-slate-800 pb-4">
                             <div class="space-y-0.5">
                                 <h3 class="font-bold text-white text-base">${mod.nome}</h3>
-                                <span class="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full uppercase font-semibold">${mod.tipo === 'grupo' ? 'Grupo / Equipe ⚽' : 'Individual / Luta 🥋'}</span>
+                                <span class="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full uppercase font-semibold">${mod.tipo === 'grupo' ? 'Grupo / Equipe ⚽' : mod.tipo === 'natacao' ? 'Natação 🏊‍♂️' : 'Individual / Luta 🥋'}</span>
                             </div>
                             <div class="flex gap-2">
                                 <button onclick="alternarInadimplentesModalidade(${mod.id})" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs px-3 py-1.5 rounded-xl font-semibold transition flex items-center gap-1.5">⚠️ Inadimplentes (${inadimplentesMod.length})</button>
@@ -546,124 +635,234 @@
                             </div>
                         </div>
 
-                        <!-- Caixa de Inadimplentes e Checagem de Pagamento -->
+                        <!-- Caixa de Inadimplentes -->
                         <div id="inadimplentes-box-${mod.id}" class="hidden bg-amber-950/30 border border-amber-500/30 p-4 rounded-2xl space-y-2.5">
-                            <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wide">Atletas com Taxa Pendente nesta Modalidade:</h4>
-                            ${inadimplentesMod.length === 0 ? '<p class="text-xs text-amber-300/80 italic">Nenhum atleta pendente de pagamento nesta modalidade! 🎉</p>' : 
+                            <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wide">Atletas com Taxa Pendente:</h4>
+                            ${inadimplentesMod.length === 0 ? '<p class="text-xs text-amber-300/80 italic">Nenhum atleta pendente nesta modalidade! 🎉</p>' : 
                                 inadimplentesMod.map(atleta => `
                                     <div class="flex items-center justify-between bg-slate-900 p-2.5 rounded-xl border border-amber-500/20 text-xs shadow-sm">
                                         <span class="font-medium text-slate-200">${atleta.nome}</span>
-                                        <button onclick="darOkPagamentoAtleta(${atleta.id})" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg font-semibold transition shadow-sm flex items-center gap-1">
-                                            ✅ Dar OK (Marcar Pago)
-                                        </button>
+                                        <button onclick="darOkPagamentoAtleta(${atleta.id})" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg font-semibold transition shadow-sm">✅ Dar OK</button>
                                     </div>
                                 `).join('')}
                         </div>
-                        
+                `;
+
+                if (mod.tipo === 'natacao') {
+                    cardHtml += `
+                        <div class="flex items-center gap-3 bg-slate-950 p-3 rounded-2xl border border-slate-800 text-xs">
+                            <span class="font-semibold text-slate-400">Número de Raias na Piscina:</span>
+                            <select onchange="atualizarRaiasNatacao(${mod.id}, this.value)" class="bg-slate-900 border border-slate-700 text-slate-200 rounded-xl px-3 py-1.5 font-bold text-indigo-400">
+                                <option value="4" ${mod.raias == 4 ? 'selected' : ''}>4 Raias</option>
+                                <option value="6" ${mod.raias == 6 ? 'selected' : ''}>6 Raias</option>
+                                <option value="8" ${mod.raias == 8 ? 'selected' : ''}>8 Raias</option>
+                            </select>
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-12 gap-2.5">
-                            <input type="text" id="input-mod-equipe-${mod.id}" placeholder="${placeholderEquipe}" class="md:col-span-4 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <input type="text" id="input-mod-atletas-${mod.id}" placeholder="${placeholderIntegrantes}" class="md:col-span-4 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <select id="select-mod-cat-${mod.id}" class="md:col-span-3 bg-slate-950 border border-slate-800 rounded-xl px-2 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input type="text" id="input-mod-atleta-nat-${mod.id}" placeholder="Nome do Atleta / Nadador" class="md:col-span-8 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-600">
+                            <select id="select-mod-cat-nat-${mod.id}" class="md:col-span-3 bg-slate-950 border border-slate-800 rounded-xl px-2 py-2 text-xs text-slate-200">
+                                <option value="Masculino">Masculino 🚹</option>
+                                <option value="Feminino">Feminino 🚺</option>
+                            </select>
+                            <button onclick="adicionarParticipanteMod(${mod.id})" class="md:col-span-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-2 rounded-xl text-xs font-semibold">Inserir</button>
+                        </div>
+                        <div class="space-y-3 pt-2">
+                    `;
+                    
+                    // Separar em Baterias com base no número de raias
+                    let raiasQtd = parseInt(mod.raias) || 4;
+                    let numBateria = 1;
+                    for (let i = 0; i < mod.participantes.length; i += raiasQtd) {
+                        let atletasBateria = mod.participantes.slice(i, i + raiasQtd);
+                        cardHtml += `
+                            <div class="bg-slate-950/60 border border-slate-800 p-3.5 rounded-2xl space-y-2">
+                                <h4 class="text-xs font-bold text-indigo-400 uppercase tracking-wide">🏊‍♂️ Bateria #${numBateria}</h4>
+                                <div class="space-y-1.5">
+                        `;
+                        atletasBateria.forEach((p, idxLocal) => {
+                            let indexAbsoluto = i + idxLocal;
+                            let raiaNum = (idxLocal % raiasQtd) + 1;
+                            cardHtml += `
+                                <div class="bg-slate-900 text-xs p-2.5 rounded-xl flex items-center justify-between border border-slate-800 gap-2">
+                                    <span class="font-bold text-indigo-300 bg-indigo-500/10 px-2 py-1 rounded">Raia #${raiaNum}</span>
+                                    <span class="font-medium text-slate-200 w-5/12 truncate">${p.nomeEquipe} <span class="text-[10px] text-slate-500">(${p.categoria})</span></span>
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-[11px] text-slate-400 font-semibold">Tempo:</span>
+                                        <input type="text" value="${p.tempo || ''}" oninput="atualizarTempoNatacao(${mod.id}, ${indexAbsoluto}, this.value)" placeholder="00:00.00" class="w-24 text-center bg-slate-950 border border-slate-700 rounded-xl px-2 py-1 text-xs font-bold text-emerald-400">
+                                    </div>
+                                    <button onclick="removerParticipanteMod(${mod.id}, ${indexAbsoluto})" class="text-rose-400 hover:text-rose-300 text-xs">✕</button>
+                                </div>
+                            `;
+                        });
+                        cardHtml += `</div></div>`;
+                        numBateria++;
+                    }
+                    if (mod.participantes.length === 0) {
+                        cardHtml += `<p class="text-xs text-slate-500 italic py-2">Nenhum nadador cadastrado.</p>`;
+                    }
+                    cardHtml += `</div>`;
+
+                } else {
+                    let placeholderEquipe = mod.tipo === 'grupo' ? 'Nome do Time/Equipe (Ex: Os Feras)' : 'Nome do Atleta (Ex: João)';
+                    let placeholderIntegrantes = mod.tipo === 'grupo' ? 'Integrantes (Ex: Carlos, Pedro)' : 'Detalhes (Ex: Peso/Série)';
+
+                    cardHtml += `
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-2.5">
+                            <input type="text" id="input-mod-equipe-${mod.id}" placeholder="${placeholderEquipe}" class="md:col-span-4 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-600">
+                            <input type="text" id="input-mod-atletas-${mod.id}" placeholder="${placeholderIntegrantes}" class="md:col-span-4 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-600">
+                            <select id="select-mod-cat-${mod.id}" class="md:col-span-3 bg-slate-950 border border-slate-800 rounded-xl px-2 py-2 text-xs text-slate-200">
                                 <option value="Masculino">Masculino 🚹</option>
                                 <option value="Feminino">Feminino 🚺</option>
                                 <option value="Mista">Mista ⚧️</option>
                             </select>
-                            <button onclick="adicionarParticipanteMod(${mod.id})" class="md:col-span-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-2 rounded-xl text-xs font-semibold transition">Inserir</button>
+                            <button onclick="adicionarParticipanteMod(${mod.id})" class="md:col-span-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-2 rounded-xl text-xs font-semibold">Inserir</button>
                         </div>
-
-                        <!-- Listagem Dinâmica -->
                         <div class="space-y-2.5">
-                `;
+                    `;
 
-                if (mod.tipo === 'grupo') {
-                    let timesMap = {};
-                    mod.participantes.forEach((p, idx) => {
-                        if (!timesMap[p.nomeEquipe]) {
-                            timesMap[p.nomeEquipe] = [];
-                        }
-                        timesMap[p.nomeEquipe].push({ ...p, originalIndex: idx });
-                    });
+                    if (mod.tipo === 'grupo') {
+                        let timesMap = {};
+                        mod.participantes.forEach((p, idx) => {
+                            if (!timesMap[p.nomeEquipe]) timesMap[p.nomeEquipe] = [];
+                            timesMap[p.nomeEquipe].push({ ...p, originalIndex: idx });
+                        });
 
-                    if (Object.keys(timesMap).length === 0) {
-                        cardHtml += `<p class="text-xs text-slate-500 italic py-2">Nenhum time cadastrado nesta modalidade.</p>`;
-                    } else {
-                        for (let nomeTime in timesMap) {
-                            cardHtml += `
-                                <div class="bg-slate-950/60 border border-slate-800 p-3.5 rounded-2xl space-y-2">
-                                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                                        <span class="font-bold text-indigo-400 text-sm flex items-center gap-1.5">🛡️ Time: ${nomeTime}</span>
-                                        <span class="text-[10px] bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 px-2 py-0.5 rounded-full font-semibold">${timesMap[nomeTime][0].categoria}</span>
-                                    </div>
-                                    <div class="space-y-1.5">
-                                        <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Integrantes:</p>
-                            `;
-                            timesMap[nomeTime].forEach(item => {
+                        if (Object.keys(timesMap).length === 0) {
+                            cardHtml += `<p class="text-xs text-slate-500 italic py-2">Nenhum time cadastrado nesta modalidade.</p>`;
+                        } else {
+                            for (let nomeTime in timesMap) {
                                 cardHtml += `
-                                    <div class="bg-slate-900 text-xs p-2.5 rounded-xl flex items-center justify-between border border-slate-800">
-                                        <span class="font-medium text-slate-200">• ${item.nomesAtletas || 'Membro sem descrição'}</span>
+                                    <div class="bg-slate-950/60 border border-slate-800 p-3.5 rounded-2xl space-y-2">
+                                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                                            <span class="font-bold text-indigo-400 text-sm">🛡️ Time: ${nomeTime}</span>
+                                            <span class="text-[10px] bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 px-2 py-0.5 rounded-full font-semibold">${timesMap[nomeTime][0].categoria}</span>
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <p class="text-[10px] font-semibold text-slate-500 uppercase">Integrantes:</p>
+                                `;
+                                timesMap[nomeTime].forEach(item => {
+                                    cardHtml += `
+                                        <div class="bg-slate-900 text-xs p-2.5 rounded-xl flex items-center justify-between border border-slate-800">
+                                            <span class="font-medium text-slate-200">• ${item.nomesAtletas || 'Membro sem descrição'}</span>
+                                            <div class="flex gap-2">
+                                                <button onclick="editarParticipanteMod(${mod.id}, ${item.originalIndex})" class="text-indigo-400 hover:text-indigo-300 font-semibold text-[11px]">Editar</button>
+                                                <button onclick="removerParticipanteMod(${mod.id}, ${item.originalIndex})" class="text-rose-400 hover:text-rose-300 font-semibold text-[11px]">Remover</button>
+                                            </div>
+                                        </div>
+                                    `;
+                                });
+                                cardHtml += `</div></div>`;
+                            }
+                        }
+                    } else {
+                        if (mod.participantes.length === 0) {
+                            cardHtml += `<p class="text-xs text-slate-500 italic py-2">Nenhum atleta cadastrado.</p>`;
+                        } else {
+                            mod.participantes.forEach((p, idx) => {
+                                cardHtml += `
+                                    <div class="bg-slate-950/60 text-slate-300 text-xs p-3 rounded-xl flex items-center justify-between border border-slate-800">
+                                        <div>
+                                            <span class="font-bold text-white">${p.nomeEquipe}</span> <span class="text-[10px] bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded-full font-semibold ml-1">${p.categoria}</span>
+                                            <p class="text-[11px] text-slate-400 mt-1"><strong>Detalhes:</strong> ${p.nomesAtletas || 'Nenhum'}</p>
+                                        </div>
                                         <div class="flex gap-2">
-                                            <button onclick="editarParticipanteMod(${mod.id}, ${item.originalIndex})" class="text-indigo-400 hover:text-indigo-300 font-semibold text-[11px] transition">Editar</button>
-                                            <button onclick="removerParticipanteMod(${mod.id}, ${item.originalIndex})" class="text-rose-400 hover:text-rose-300 font-semibold text-[11px] transition">Remover</button>
+                                            <button onclick="editarParticipanteMod(${mod.id}, ${idx})" class="text-indigo-400 hover:text-indigo-300 font-semibold px-2 py-1">Editar</button>
+                                            <button onclick="removerParticipanteMod(${mod.id}, ${idx})" class="text-rose-400 hover:text-rose-300 font-semibold px-2 py-1">Remover</button>
                                         </div>
                                     </div>
                                 `;
                             });
-                            cardHtml += `</div></div>`;
                         }
                     }
-                } else {
-                    if (mod.participantes.length === 0) {
-                        cardHtml += `<p class="text-xs text-slate-500 italic py-2">Nenhum atleta cadastrado nesta modalidade.</p>`;
-                    } else {
-                        mod.participantes.forEach((p, idx) => {
+                    cardHtml += `</div>`;
+                }
+
+                if (mod.tipo !== 'natacao') {
+                    cardHtml += `
+                        <div class="flex flex-wrap gap-2 pt-3 border-t border-slate-800">
+                            <button onclick="gerarEstrutura(${mod.id}, 'mata-mata')" class="bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs px-3.5 py-2 rounded-xl font-semibold transition">Gerar Chave (Mata-Mata)</button>
+                            <button onclick="gerarEstrutura(${mod.id}, 'pontos')" class="bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs px-3.5 py-2 rounded-xl font-semibold transition">Gerar Pontos Corridos</button>
+                        </div>
+                    `;
+                }
+
+                if (mod.estrutura && mod.formato) {
+                    cardHtml += `<div class="mt-4 pt-3 border-t border-slate-800 space-y-3">
+                        <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wide">Partidas & Somatório (${mod.formato.toUpperCase()})</h4>`;
+                    
+                    if (mod.formato === 'mata-mata') {
+                        mod.estrutura.forEach((j, index) => {
                             cardHtml += `
-                                <div class="bg-slate-950/60 text-slate-300 text-xs p-3 rounded-xl flex items-center justify-between border border-slate-800">
-                                    <div>
-                                        <span class="font-bold text-white">${p.nomeEquipe}</span> <span class="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full font-semibold ml-1">${p.categoria}</span>
-                                        <p class="text-[11px] text-slate-400 mt-1"><strong>Detalhes:</strong> ${p.nomesAtletas || 'Nenhum'}</p>
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <button onclick="editarParticipanteMod(${mod.id}, ${idx})" class="text-indigo-400 hover:text-indigo-300 font-semibold transition px-2 py-1">Editar</button>
-                                        <button onclick="removerParticipanteMod(${mod.id}, ${idx})" class="text-rose-400 hover:text-rose-300 font-semibold transition px-2 py-1">Remover</button>
+                                <div class="flex items-center justify-between bg-slate-950 p-3 rounded-2xl text-xs border border-slate-800 gap-2">
+                                    <span class="w-20 font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-1.5 rounded-xl text-center">Jogo #${index + 1}</span>
+                                    <span class="w-3/12 font-medium truncate text-right pr-1 text-slate-200">${j.adv1}</span>
+                                    <input type="text" value="${j.p1 !== undefined ? j.p1 : ''}" oninput="atualizarPlacarMata(${mod.id}, ${index}, 'p1', this.value)" placeholder="Placar" class="w-14 text-center border border-slate-700 rounded-xl bg-slate-900 py-1.5 font-bold text-indigo-400">
+                                    <span class="text-slate-500 font-bold px-1">vs</span>
+                                    <input type="text" value="${j.p2 !== undefined ? j.p2 : ''}" oninput="atualizarPlacarMata(${mod.id}, ${index}, 'p2', this.value)" placeholder="Placar" class="w-14 text-center border border-slate-700 rounded-xl bg-slate-900 py-1.5 font-bold text-indigo-400">
+                                    <span class="w-3/12 font-medium truncate text-left pl-1 text-slate-200">${j.adv2}</span>
+                                </div>`;
+                        });
+                    } else if (mod.formato === 'pontos') {
+                        // Exibir Tabela Classificatória com Somatório
+                        let tabelaPontos = calcularTabelaPontos(mod);
+                        cardHtml += `
+                            <div class="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 space-y-2">
+                                <h5 class="text-xs font-bold text-indigo-400 uppercase">📊 Tabela Classificatória (Somatório)</h5>
+                                <table class="w-full text-left text-xs">
+                                    <thead>
+                                        <tr class="text-slate-500 border-b border-slate-800">
+                                            <th class="py-1">Pos / Time</th>
+                                            <th class="py-1 text-center">Vitórias</th>
+                                            <th class="py-1 text-center">Saldo</th>
+                                            <th class="py-1 text-right">Pts</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${tabelaPontos.map((tp, idx) => `
+                                            <tr class="border-b border-slate-900">
+                                                <td class="py-1.5 font-medium text-slate-200">${idx+1}º - ${tp.time}</td>
+                                                <td class="py-1.5 text-center text-slate-400">${tp.vitorias}</td>
+                                                <td class="py-1.5 text-center text-slate-400">${tp.saldoGols}</td>
+                                                <td class="py-1.5 text-right font-bold text-indigo-400">${tp.pontosGanhos}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                                <div class="pt-2">
+                                    <button onclick="gerarFinalPontosCorridos(${mod.id})" class="bg-amber-600 hover:bg-amber-500 text-white text-[11px] px-3 py-1.5 rounded-xl font-semibold transition">🏆 Gerar Grande Final (1º vs 2º)</button>
+                                </div>
+                            </div>
+                        `;
+
+                        // Jogos de Pontos Corridos
+                        mod.estrutura.forEach((j, index) => {
+                            cardHtml += `
+                                <div class="flex items-center justify-between bg-slate-950 p-3 rounded-2xl text-xs border border-slate-800 gap-2">
+                                    <span class="w-20 font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-1.5 rounded-xl text-center">Rodada #${index + 1}</span>
+                                    <span class="w-3/12 font-medium truncate text-right pr-1 text-slate-200">${j.time1}</span>
+                                    <input type="text" value="${j.pl1 !== undefined ? j.pl1 : ''}" oninput="atualizarPlacarPontos(${mod.id}, ${index}, 'pl1', this.value)" placeholder="Placar" class="w-14 text-center border border-slate-700 rounded-xl bg-slate-900 py-1.5 font-bold text-indigo-400">
+                                    <span class="text-slate-500 font-bold px-1">vs</span>
+                                    <input type="text" value="${j.pl2 !== undefined ? j.pl2 : ''}" oninput="atualizarPlacarPontos(${mod.id}, ${index}, 'pl2', this.value)" placeholder="Placar" class="w-14 text-center border border-slate-700 rounded-xl bg-slate-900 py-1.5 font-bold text-indigo-400">
+                                    <span class="w-3/12 font-medium truncate text-left pl-1 text-slate-200">${j.time2}</span>
+                                </div>`;
+                        });
+
+                        // Partida Final se gerada
+                        if (mod.finalPontos) {
+                            cardHtml += `
+                                <div class="bg-amber-950/20 border border-amber-500/30 p-3.5 rounded-2xl space-y-2 mt-2">
+                                    <h5 class="text-xs font-bold text-amber-400 uppercase">🌟 Grande Final dos Pontos Corridos</h5>
+                                    <div class="flex items-center justify-between bg-slate-950 p-3 rounded-2xl text-xs border border-amber-500/20 gap-2">
+                                        <span class="w-20 font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1.5 rounded-xl text-center">FINAL</span>
+                                        <span class="w-3/12 font-medium truncate text-right pr-1 text-slate-200">${mod.finalPontos.time1}</span>
+                                        <input type="text" value="${mod.finalPontos.p1 !== undefined ? mod.finalPontos.p1 : ''}" oninput="atualizarPlacarFinal(${mod.id}, 'p1', this.value)" placeholder="Placar" class="w-14 text-center border border-slate-700 rounded-xl bg-slate-900 py-1.5 font-bold text-amber-400">
+                                        <span class="text-slate-500 font-bold px-1">vs</span>
+                                        <input type="text" value="${mod.finalPontos.p2 !== undefined ? mod.finalPontos.p2 : ''}" oninput="atualizarPlacarFinal(${mod.id}, 'p2', this.value)" placeholder="Placar" class="w-14 text-center border border-slate-700 rounded-xl bg-slate-900 py-1.5 font-bold text-amber-400">
+                                        <span class="w-3/12 font-medium truncate text-left pl-1 text-slate-200">${mod.finalPontos.time2}</span>
                                     </div>
                                 </div>
                             `;
-                        });
-                    }
-                }
-
-                cardHtml += `</div>`;
-
-                cardHtml += `
-                        <div class="flex flex-wrap gap-2 pt-3 border-t border-slate-800">
-                            <button onclick="gerarEstrutura(${mod.id}, 'mata-mata')" class="bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs px-3.5 py-2 rounded-xl font-semibold transition">Gerar Chave de Jogos (Mata-Mata)</button>
-                            <button onclick="gerarEstrutura(${mod.id}, 'pontos')" class="bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs px-3.5 py-2 rounded-xl font-semibold transition">Gerar Todos contra Todos</button>
-                        </div>
-                `;
-
-                if (mod.estrutura && mod.formato) {
-                    cardHtml += `<div class="mt-4 pt-3 border-t border-slate-800 space-y-2.5"><h4 class="text-xs font-bold text-slate-300 uppercase tracking-wide">Chaveamento / Partidas (${mod.formato.toUpperCase()})</h4>`;
-                    
-                    if (mod.formato === 'mata-mata' || mod.formato === 'pontos') {
-                        mod.estrutura.forEach((j, index) => {
-                            let t1 = j.adv1 || j.time1;
-                            let t2 = j.adv2 || j.time2;
-                            let v1 = j.p1 !== undefined ? j.p1 : j.pl1;
-                            let v2 = j.p2 !== undefined ? j.p2 : j.pl2;
-                            let campo1 = mod.formato === 'mata-mata' ? 'p1' : 'pl1';
-                            let campo2 = mod.formato === 'mata-mata' ? 'p2' : 'pl2';
-                            let funcName = mod.formato === 'mata-mata' ? 'atualizarPlacarMata' : 'atualizarPlacarPontos';
-
-                            cardHtml += `
-                                <div class="flex items-center justify-between bg-slate-950 p-3 rounded-2xl text-xs border border-slate-800 gap-2">
-                                    <span class="w-20 font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1.5 rounded-xl text-center">Jogo #${index + 1}</span>
-                                    <span class="w-3/12 font-medium truncate text-right pr-1 text-slate-200">${t1}</span>
-                                    <input type="text" value="${v1}" oninput="${funcName}(${mod.id}, ${index}, '${campo1}', this.value)" placeholder="Placar" class="w-14 text-center border border-slate-700 rounded-xl bg-slate-900 py-1.5 font-bold text-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                    <span class="text-slate-500 font-bold px-1">vs</span>
-                                    <input type="text" value="${v2}" oninput="${funcName}(${mod.id}, ${index}, '${campo2}', this.value)" placeholder="Placar" class="w-14 text-center border border-slate-700 rounded-xl bg-slate-900 py-1.5 font-bold text-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                    <span class="w-3/12 font-medium truncate text-left pl-1 text-slate-200">${t2}</span>
-                                </div>`;
-                        });
+                        }
                     }
                     cardHtml += `</div>`;
                 }
@@ -671,26 +870,26 @@
                 // Seção de Pódio
                 cardHtml += `
                     <div class="mt-4 pt-3 border-t border-slate-800 space-y-3 bg-amber-950/20 p-4 rounded-2xl border border-amber-500/20">
-                        <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wide">🥇 Pódio / Premiação da Modalidade</h4>
+                        <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wide">🥇 Pódio / Premiação</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[11px] font-semibold text-slate-400 mb-1">🏆 1º Lugar (Campeão):</label>
-                                <input type="text" value="${mod.podio.campeao || ''}" oninput="atualizarPodio(${mod.id}, 'campeao', this.value)" placeholder="Nome do Campeão / Time" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+                                <input type="text" value="${mod.podio.campeao || ''}" oninput="atualizarPodio(${mod.id}, 'campeao', this.value)" placeholder="Campeão / Time" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 font-medium">
                             </div>
                             <div>
                                 <label class="block text-[11px] font-semibold text-slate-400 mb-1">🥈 2º Lugar (Vice-Campeão):</label>
-                                <input type="text" value="${mod.podio.vice || ''}" oninput="atualizarPodio(${mod.id}, 'vice', this.value)" placeholder="Nome do Vice / Time" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+                                <input type="text" value="${mod.podio.vice || ''}" oninput="atualizarPodio(${mod.id}, 'vice', this.value)" placeholder="Vice / Time" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 font-medium">
                             </div>
                         </div>
                         <div class="space-y-2 pt-1">
                             <div class="flex justify-between items-center">
-                                <label class="block text-[11px] font-semibold text-slate-400">🥉 3º Lugar (Permite múltiplos/empates):</label>
-                                <button onclick="adicionarTerceiroLugar(${mod.id})" class="bg-amber-600 hover:bg-amber-500 text-white text-[10px] px-3 py-1.5 rounded-xl font-semibold transition shadow-sm">+ Adicionar outro 3º Lugar</button>
+                                <label class="block text-[11px] font-semibold text-slate-400">🥉 3º Lugar:</label>
+                                <button onclick="adicionarTerceiroLugar(${mod.id})" class="bg-amber-600 hover:bg-amber-500 text-white text-[10px] px-3 py-1.5 rounded-xl font-semibold transition">+ Adicionar outro</button>
                             </div>
                             ${mod.podio.terceiros.map((terc, tIdx) => `
                                 <div class="flex gap-2 items-center">
-                                    <input type="text" value="${terc || ''}" oninput="atualizarPodio(${mod.id}, 'terceiro', this.value, ${tIdx})" placeholder="Nome do 3º Lugar #${tIdx + 1}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
-                                    ${mod.podio.terceiros.length > 1 ? `<button onclick="removerTerceiroLugar(${mod.id}, ${tIdx})" class="text-rose-400 hover:text-rose-300 text-xs font-bold px-2.5 py-1">✕</button>` : ''}
+                                    <input type="text" value="${terc || ''}" oninput="atualizarPodio(${mod.id}, 'terceiro', this.value, ${tIdx})" placeholder="3º Lugar #${tIdx + 1}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 font-medium">
+                                    ${mod.podio.terceiros.length > 1 ? `<button onclick="removerTerceiroLugar(${mod.id}, ${tIdx})" class="text-rose-400 hover:text-rose-300 text-xs font-bold px-2 py-1">✕</button>` : ''}
                                 </div>
                             `).join('')}
                         </div>
@@ -700,7 +899,7 @@
                 cardHtml += `</div>`;
                 modContainer.innerHTML += cardHtml;
 
-                // Relatório de Impressão Elegante
+                // Relatório de Impressão
                 let relSec = `<div class="border-b border-slate-200 pb-6 mb-6 space-y-4">
                     <div class="bg-indigo-900 text-white px-4 py-2.5 rounded-xl font-bold text-sm flex justify-between items-center shadow-sm">
                         <span>📌 Modalidade: ${mod.nome}</span>
@@ -708,56 +907,38 @@
                     </div>`;
                 
                 if (mod.participantes.length > 0) {
-                    if (mod.tipo === 'grupo') {
+                    if (mod.tipo === 'natacao') {
+                        relSec += `<div class="space-y-1"><strong class="text-xs font-bold text-slate-700 uppercase">Nadadores e Tempos Registrados:</strong><div class="grid grid-cols-1 gap-1.5 pt-1">`;
+                        mod.participantes.forEach(p => {
+                            relSec += `<div class="text-xs bg-slate-50 border border-slate-200 p-2 rounded-lg text-slate-700">• <strong>${p.nomeEquipe}</strong> (${p.categoria}) — <strong>Tempo: ${p.tempo || 'Não informado'}</strong></div>`;
+                        });
+                        relSec += `</div></div>`;
+                    } else if (mod.tipo === 'grupo') {
                         let relTimesMap = {};
                         mod.participantes.forEach(p => {
                             if (!relTimesMap[p.nomeEquipe]) relTimesMap[p.nomeEquipe] = [];
                             relTimesMap[p.nomeEquipe].push(p.nomesAtletas);
                         });
-                        relSec += `<div class="space-y-1.5"><strong class="text-xs font-bold text-slate-700 uppercase tracking-wide">Times e Elencos Inscritos:</strong><div class="grid grid-cols-1 gap-2 pt-1">`;
+                        relSec += `<div class="space-y-1.5"><strong class="text-xs font-bold text-slate-700 uppercase">Times Inscritos:</strong><div class="grid grid-cols-1 gap-2 pt-1">`;
                         for (let tName in relTimesMap) {
                             relSec += `<div class="text-xs bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-slate-700"><strong>🛡️ Time: ${tName}</strong><br><span class="text-slate-500">Integrantes: ${relTimesMap[tName].join(', ')}</span></div>`;
                         }
                         relSec += `</div></div>`;
                     } else {
-                        relSec += `<div class="space-y-1"><strong class="text-xs font-bold text-slate-700 uppercase tracking-wide">Atletas Inscritos:</strong><div class="grid grid-cols-1 md:grid-cols-2 gap-1.5 pt-1">`;
+                        relSec += `<div class="space-y-1"><strong class="text-xs font-bold text-slate-700 uppercase">Atletas Inscritos:</strong><div class="grid grid-cols-1 md:grid-cols-2 gap-1.5 pt-1">`;
                         mod.participantes.forEach(p => {
-                            relSec += `<div class="text-xs bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-slate-700">• <strong>${p.nomeEquipe}</strong> <span class="text-slate-400">(${p.categoria} - ${p.nomesAtletas || 'Geral'})</span></div>`;
+                            relSec += `<div class="text-xs bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-slate-700">• <strong>${p.nomeEquipe}</strong> <span class="text-slate-400">(${p.categoria})</span></div>`;
                         });
                         relSec += `</div></div>`;
                     }
                 }
 
-                if (mod.estrutura && mod.formato) {
-                    relSec += `<div><h4 class="font-bold text-xs text-slate-700 uppercase tracking-wider mb-2 bg-slate-100 p-2.5 rounded-xl">Chaves Oficiais & Partidas (${mod.formato.toUpperCase()})</h4>`;
-                    relSec += `<div class="space-y-2">`;
-                    
-                    mod.estrutura.forEach((j, index) => {
-                        let t1 = j.adv1 || j.time1;
-                        let t2 = j.adv2 || j.time2;
-                        let v1 = (j.p1 !== undefined ? j.p1 : j.pl1) || '___';
-                        let v2 = (j.p2 !== undefined ? j.p2 : j.pl2) || '___';
-                        relSec += `
-                            <div class="flex items-center justify-between border border-slate-200 p-3 rounded-2xl bg-white text-xs shadow-xs">
-                                <span class="font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1.5 rounded-xl">Jogo #${index + 1}</span>
-                                <div class="w-4/12 font-semibold text-right pr-2 truncate text-slate-800">${t1}</div>
-                                <div class="flex items-center justify-center gap-2 bg-slate-50 px-3.5 py-1 rounded-xl border border-slate-200">
-                                    <span class="font-bold text-indigo-700">${v1}</span>
-                                    <span class="text-slate-400 font-bold">x</span>
-                                    <span class="font-bold text-indigo-700">${v2}</span>
-                                </div>
-                                <div class="w-4/12 font-semibold text-left pl-2 truncate text-slate-800">${t2}</div>
-                            </div>`;
-                    });
-                    relSec += `</div></div>`;
-                }
-
                 if (mod.podio && (mod.podio.campeao || mod.podio.vice || mod.podio.terceiros.some(t => t))) {
                     relSec += `
-                        <div class="bg-amber-50/70 border border-amber-300 p-4 rounded-2xl text-xs space-y-1.5 shadow-xs">
-                            <h4 class="font-bold text-amber-900 uppercase tracking-wider">🏆 Pódio Oficial</h4>
-                            ${mod.podio.campeao ? `<p class="text-slate-800"><strong>🥇 1º Lugar (Campeão):</strong> ${mod.podio.campeao}</p>` : ''}
-                            ${mod.podio.vice ? `<p class="text-slate-800"><strong>🥈 2º Lugar (Vice-Campeão):</strong> ${mod.podio.vice}</p>` : ''}
+                        <div class="bg-amber-50/70 border border-amber-300 p-4 rounded-2xl text-xs space-y-1.5 shadow-xs mt-4">
+                            <h4 class="font-bold text-amber-900 uppercase">🏆 Pódio Oficial</h4>
+                            ${mod.podio.campeao ? `<p class="text-slate-800"><strong>🥇 Campeão:</strong> ${mod.podio.campeao}</p>` : ''}
+                            ${mod.podio.vice ? `<p class="text-slate-800"><strong>🥈 Vice-Campeão:</strong> ${mod.podio.vice}</p>` : ''}
                             ${mod.podio.terceiros.filter(t => t).length > 0 ? `<p class="text-slate-800"><strong>🥉 3º Lugar:</strong> ${mod.podio.terceiros.filter(t => t).join(' / ')}</p>` : ''}
                         </div>
                     `;
