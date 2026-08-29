@@ -121,13 +121,16 @@
             <input type="text" id="input-busca-global" oninput="filtrarGlobal(this.value)" placeholder="Pesquisar modalidade ou atleta/time neste evento..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
         </div>
 
-        <!-- Seção 1: Lista Universal de Pagamentos (Alimentada Automaticamente pelas Modalidades) -->
-        <section class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl no-print space-y-4">
-            <div class="border-b border-slate-800 pb-3 flex justify-between items-center">
+        <!-- Seção 1: Lista Universal de Pagamentos / Secretaria -->
+        <section class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl space-y-4">
+            <div class="border-b border-slate-800 pb-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div>
-                    <h2 class="text-base font-bold text-white flex items-center gap-2">📋 Lista Universal de Atletas & Pagamentos</h2>
-                    <p class="text-xs text-slate-400 mt-0.5">Gerencie aqui o status das taxas (Pago/Pendente) protegidos por senha de ADM.</p>
+                    <h2 class="text-base font-bold text-white flex items-center gap-2">💵 Secretaria: Controle e Inscrições (Pagamentos)</h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Lista gerada automaticamente para a secretaria conferir recebimentos e dar o OK (protegido por senha).</p>
                 </div>
+                <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-semibold transition shadow-lg shadow-emerald-600/20 flex items-center gap-1.5 no-print whitespace-nowrap">
+                    🖨️ Imprimir Lista para Secretaria (PDF)
+                </button>
             </div>
             <div id="tabela-universal" class="overflow-x-auto pt-1"></div>
         </section>
@@ -161,6 +164,9 @@
                     🖨️ Imprimir / Salvar PDF
                 </button>
             </div>
+
+            <!-- Tabela de Pagamentos também sai impressa no PDF geral -->
+            <div id="print-secretaria-container" class="space-y-2"></div>
 
             <div id="relatorio-conteudo" class="space-y-8 text-sm"></div>
         </section>
@@ -633,19 +639,20 @@
             printHeaderVisual.innerHTML = `
                 ${logoHtml}
                 <h2 id="print-title" class="text-2xl font-bold text-white tracking-tight">${ev.nomeEvento}</h2>
-                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mt-1">Relatório Oficial, Resultados e Pódios do Torneio</p>
+                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mt-1">Relatório Oficial de Inscrições, Pagamentos e Resultados</p>
             `;
 
-            let tabUniversal = document.getElementById('tabela-universal');
-            if (ev.atletasGeral.length === 0) {
-                tabUniversal.innerHTML = `<p class="text-xs text-slate-500 italic py-3 text-center">Nenhum participante adicionado nas modalidades ainda. Cadastre participantes nas modalidades abaixo para visualizá-los aqui.</p>`;
-            } else {
+            // HTML da Tabela Universal para a tela e para o PDF
+            let gerarTabelaHtml = (paraImpressao = false) => {
+                if (ev.atletasGeral.length === 0) {
+                    return `<p class="text-xs text-slate-500 italic py-3 text-center">Nenhum participante adicionado nas modalidades ainda. Cadastre participantes nas modalidades abaixo para visualizá-los aqui.</p>`;
+                }
                 let html = `<table class="w-full text-left text-xs border-collapse">
                     <thead>
                         <tr class="border-b border-slate-800 text-slate-400 font-semibold">
                             <th class="py-2.5 px-2">Participante / Atleta / Equipe</th>
                             <th class="py-2.5 px-2">Modalidade(s) Vinculada(s)</th>
-                            <th class="py-2.5 px-2 text-center">Status da Taxa (Protegido por Senha)</th>
+                            <th class="py-2.5 px-2 text-center">Status da Inscrição (Taxa)</th>
                         </tr>
                     </thead>
                     <tbody>`;
@@ -659,9 +666,16 @@
                     });
                     let modsTexto = modsDoAtleta.length > 0 ? modsDoAtleta.join(', ') : '<span class="text-slate-600 italic">Nenhuma</span>';
 
-                    let badgeBtn = a.status === 'pago' ? 
-                        `<button onclick="alterarStatusTaxaAtleta(${a.id})" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-semibold transition">Pago 🟢 (Exige Senha)</button>` : 
-                        `<button onclick="alterarStatusTaxaAtleta(${a.id})" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full font-semibold transition">Pendente 🔴 (Exige Senha)</button>`;
+                    let badgeBtn = "";
+                    if (paraImpressao) {
+                        badgeBtn = a.status === 'pago' ? 
+                            `<span class="text-emerald-500 font-bold">🟢 PAGO</span>` : 
+                            `<span class="text-rose-500 font-bold">🔴 PENDENTE</span>`;
+                    } else {
+                        badgeBtn = a.status === 'pago' ? 
+                            `<button onclick="alterarStatusTaxaAtleta(${a.id})" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-semibold transition">Pago 🟢 (Exige Senha)</button>` : 
+                            `<button onclick="alterarStatusTaxaAtleta(${a.id})" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full font-semibold transition">Pendente 🔴 (Exige Senha)</button>`;
+                    }
                     
                     html += `<tr class="border-b border-slate-800/60 hover:bg-slate-950/40 transition">
                         <td class="py-3 px-2 font-medium text-slate-200">${a.nome}</td>
@@ -670,8 +684,16 @@
                     </tr>`;
                 });
                 html += `</tbody></table>`;
-                tabUniversal.innerHTML = html;
-            }
+                return html;
+            };
+
+            document.getElementById('tabela-universal').innerHTML = gerarTabelaHtml(false);
+            document.getElementById('print-secretaria-container').innerHTML = `
+                <div class="space-y-2 border-b border-slate-800 pb-6">
+                    <h3 class="text-base font-bold text-white border-l-4 border-emerald-500 pl-3">💵 Relatório da Secretaria (Controle de Inscrições & Pagamentos)</h3>
+                    ${gerarTabelaHtml(true)}
+                </div>
+            `;
 
             let modContainer = document.getElementById('modalidades-container');
             let relatorioConteudo = document.getElementById('relatorio-conteudo');
