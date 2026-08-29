@@ -353,7 +353,7 @@
             ev.atletasGeral = ev.atletasGeral.filter(ag => nomesEncontrados.has(ag.nome));
         }
 
-        // Agora protegido pela senha de Administração/Exclusão
+        // Protegido pela senha de Administração/Exclusão
         function alterarStatusTaxaAtleta(id) {
             pedirSenhaExclusaoEdicao(() => {
                 let ev = getEventoAtual();
@@ -403,23 +403,25 @@
             let mod = ev.modalidades.find(m => m.id === modId);
             if (mod.tipo === 'natacao') {
                 let nomeAtleta = document.getElementById(`input-mod-atleta-nat-${modId}`).value.trim();
-                let categoria = document.getElementById(`select-mod-cat-nat-${modId}`).value;
+                let categoria = document.getElementById(`input-mod-cat-nat-${modId}`).value.trim();
                 if (!nomeAtleta) return alert('Digite o nome do nadador!');
-                mod.participantes.push({ nomeEquipe: nomeAtleta, nomesAtletas: '', categoria, tempo: '' });
+                mod.participantes.push({ nomeEquipe: nomeAtleta, nomesAtletas: '', categoria: categoria || 'Geral', tempo: '' });
                 document.getElementById(`input-mod-atleta-nat-${modId}`).value = '';
+                document.getElementById(`input-mod-cat-nat-${modId}`).value = '';
             } else {
                 let inputEquipe = document.getElementById(`input-mod-equipe-${modId}`);
                 let inputAtletas = document.getElementById(`input-mod-atletas-${modId}`);
-                let selectCat = document.getElementById(`select-mod-cat-${modId}`);
+                let inputCat = document.getElementById(`input-mod-cat-${modId}`);
 
                 let nomeEquipe = inputEquipe.value.trim();
                 let nomesAtletas = inputAtletas.value.trim();
-                let categoria = selectCat.value;
+                let categoria = inputCat.value.trim();
 
                 if (!nomeEquipe) return alert('Digite o nome do participante ou equipe!');
-                mod.participantes.push({ nomeEquipe, nomesAtletas, categoria });
+                mod.participantes.push({ nomeEquipe, nomesAtletas, categoria: categoria || 'Geral' });
                 inputEquipe.value = '';
                 inputAtletas.value = '';
+                inputCat.value = '';
             }
             sincronizarListaUniversal();
             salvarBanco();
@@ -435,10 +437,13 @@
                 if (novoTime === null) return;
                 let novosAtletas = prompt("Editar Elenco / Integrantes:", p.nomesAtletas);
                 if (novosAtletas === null) return;
+                let novaCat = prompt("Editar Categoria (Ex: Sub-12, Sub-15, Geral):", p.categoria);
+                if (novaCat === null) return;
 
                 if (novoTime.trim() !== "") {
                     p.nomeEquipe = novoTime.trim();
                     p.nomesAtletas = novosAtletas.trim();
+                    p.categoria = novaCat.trim() !== "" ? novaCat.trim() : 'Geral';
                     sincronizarListaUniversal();
                     salvarBanco();
                 }
@@ -699,11 +704,7 @@
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                                 <input type="text" id="input-mod-atleta-nat-${mod.id}" placeholder="Nome do Nadador" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <select id="select-mod-cat-nat-${mod.id}" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                    <option value="Geral">Categoria Geral</option>
-                                    <option value="Masculino">Masculino</option>
-                                    <option value="Feminino">Feminino</option>
-                                </select>
+                                <input type="text" id="input-mod-cat-nat-${mod.id}" placeholder="Categoria (Ex: Sub-12, Sub-15, Geral)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             </div>
                             <button onclick="adicionarParticipanteMod(${mod.id})" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition shadow-lg shadow-indigo-600/20">Adicionar Nadador</button>
                         </div>
@@ -714,13 +715,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                                 <input type="text" id="input-mod-equipe-${mod.id}" placeholder="${mod.tipo === 'individual' ? 'Nome do Atleta / Lutador' : 'Nome da Equipe'}" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                 <input type="text" id="input-mod-atletas-${mod.id}" placeholder="Elenco / Integrantes (Opcional)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <select id="select-mod-cat-${mod.id}" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                    <option value="Geral">Categoria Geral</option>
-                                    <option value="Sub-15">Sub-15</option>
-                                    <option value="Sub-17">Sub-17</option>
-                                    <option value="Masculino">Masculino</option>
-                                    <option value="Feminino">Feminino</option>
-                                </select>
+                                <input type="text" id="input-mod-cat-${mod.id}" placeholder="Categoria (Ex: Sub-12, Sub-15, Geral)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             </div>
                             <button onclick="adicionarParticipanteMod(${mod.id})" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition shadow-lg shadow-indigo-600/20">Adicionar à Modalidade</button>
                         </div>
@@ -740,7 +735,7 @@
                                 <div>
                                     <span class="font-semibold text-slate-200">${p.nomeEquipe}</span> ${badgeTaxa}
                                     ${p.nomesAtletas ? `<span class="text-slate-400 text-[11px] block">Elenco: ${p.nomesAtletas}</span>` : ''}
-                                    <span class="text-[10px] text-indigo-400 font-medium">(${p.categoria})</span>
+                                    <span class="text-[10px] text-indigo-400 font-medium">(${p.categoria || 'Geral'})</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <button onclick="editarParticipanteMod(${mod.id}, ${idx})" class="text-slate-400 hover:text-slate-200 transition">✏️</button>
@@ -780,7 +775,7 @@
                                                     <div class="flex justify-between items-center bg-slate-950/80 px-3 py-1.5 rounded-xl border border-slate-800/60 text-xs">
                                                         <div class="flex items-center gap-2">
                                                             <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-bold text-indigo-300">Pos ${nad.posicaoNaBateria}</span>
-                                                            <span class="font-medium text-slate-200">${nad.nomeEquipe} <span class="text-[10px] text-slate-400">(${nad.categoria})</span></span>
+                                                            <span class="font-medium text-slate-200">${nad.nomeEquipe} <span class="text-[10px] text-slate-400">(${nad.categoria || 'Geral'})</span></span>
                                                         </div>
                                                         <input type="text" value="${nad.tempo || ''}" oninput="atualizarTempoNadadorBateria(${mod.id}, ${bIdx}, ${nIdx}, this.value)" placeholder="00:54.20" class="bg-slate-900 border border-slate-800 text-xs text-slate-200 rounded-xl px-3 py-1 w-28 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                                     </div>
@@ -799,7 +794,7 @@
                         <div class="bg-slate-950/40 p-2.5 rounded-xl border border-slate-800 space-y-1 text-xs">
                             <p class="font-bold text-indigo-400">Bateria ${bat.numeroBateria}:</p>
                             <ul class="list-disc pl-4 space-y-0.5 text-slate-300">
-                                ${bat.nadadores.map(n => `<li>Atleta ${n.posicaoNaBateria} - ${n.nomeEquipe} (${n.categoria}) — Tempo: <strong>${n.tempo || 'Não informado'}</strong></li>`).join('')}
+                                ${bat.nadadores.map(n => `<li>Atleta ${n.posicaoNaBateria} - ${n.nomeEquipe} (${n.categoria || 'Geral'}) — Tempo: <strong>${n.tempo || 'Não informado'}</strong></li>`).join('')}
                             </ul>
                         </div>
                     `).join('') : '<p class="text-xs text-slate-500 italic">Nenhuma bateria gerada.</p>';
@@ -1004,7 +999,7 @@
 
                 let relatorioParticipantesTexto = mod.participantes.map(p => `
                     <div class="border-b border-slate-800/40 py-1">
-                        <strong>${p.nomeEquipe}</strong> (${p.categoria}) ${p.nomesAtletas ? '— Elenco: ' + p.nomesAtletas : ''}
+                        <strong>${p.nomeEquipe}</strong> (${p.categoria || 'Geral'}) ${p.nomesAtletas ? '— Elenco: ' + p.nomesAtletas : ''}
                     </div>
                 `).join('') || 'Nenhum participante';
 
