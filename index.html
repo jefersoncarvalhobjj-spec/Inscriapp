@@ -9,8 +9,15 @@
     <style>
         @media print {
             body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; }
+            .print-secretaria-ativa * { visibility: visible; }
+            .print-relatorio-ativo * { visibility: visible; }
+            
+            #print-area-secretaria.print-secretaria-ativa { 
+                position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; background: white !important; 
+            }
+            #print-area.print-relatorio-ativo { 
+                position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; background: white !important; 
+            }
             .no-print { display: none !important; }
             body { background: white !important; color: black !important; }
         }
@@ -121,18 +128,23 @@
             <input type="text" id="input-busca-global" oninput="filtrarGlobal(this.value)" placeholder="Pesquisar modalidade ou atleta/time neste evento..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
         </div>
 
-        <!-- Seção 1: Lista Universal de Pagamentos / Secretaria -->
-        <section class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl space-y-4">
+        <!-- Seção 1: Lista Universal de Pagamentos / Secretaria (Área de Impressão Isolada da Secretaria) -->
+        <section id="print-area-secretaria" class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl space-y-4">
             <div class="border-b border-slate-800 pb-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div>
                     <h2 class="text-base font-bold text-white flex items-center gap-2">💵 Secretaria: Controle e Inscrições (Pagamentos)</h2>
                     <p class="text-xs text-slate-400 mt-0.5">Lista gerada automaticamente para a secretaria conferir recebimentos e dar o OK (protegido por senha).</p>
                 </div>
-                <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-semibold transition shadow-lg shadow-emerald-600/20 flex items-center gap-1.5 no-print whitespace-nowrap">
-                    🖨️ Imprimir Lista para Secretaria (PDF)
-                </button>
+                <div class="flex items-center gap-2 no-print">
+                    <button onclick="alternarVisibilidadeSecretaria()" id="btn-toggle-secretaria" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold transition shadow-sm flex items-center gap-1.5">
+                        👁️ Ocultar Lista
+                    </button>
+                    <button onclick="imprimirSecretaria()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-semibold transition shadow-lg shadow-emerald-600/20 flex items-center gap-1.5 whitespace-nowrap">
+                        🖨️ Imprimir Lista (PDF)
+                    </button>
+                </div>
             </div>
-            <div id="tabela-universal" class="overflow-x-auto pt-1"></div>
+            <div id="tabela-universal" class="overflow-x-auto pt-1 transition-all duration-300"></div>
         </section>
 
         <!-- Seção 2: Cadastro de Modalidades -->
@@ -155,19 +167,17 @@
         <!-- Container das Modalidades -->
         <section id="modalidades-container" class="space-y-6 no-print"></section>
 
-        <!-- Área de Impressão / Relatório Final -->
+        <!-- Área de Impressão / Relatório Final de Resultados -->
         <section id="print-area" class="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl shadow-xl space-y-6">
             <div id="print-header-visual" class="text-center border-b border-slate-800 pb-6"></div>
             
             <div class="flex justify-end no-print pb-2">
-                <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition shadow-lg shadow-emerald-600/20 flex items-center gap-2">
-                    🖨️ Imprimir / Salvar PDF
+                <button onclick="imprimirRelatorio()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition shadow-lg shadow-emerald-600/20 flex items-center gap-2">
+                    🖨️ Imprimir Resultados / Salvar PDF
                 </button>
             </div>
 
-            <!-- Tabela de Pagamentos também sai impressa no PDF geral -->
-            <div id="print-secretaria-container" class="space-y-2"></div>
-
+            <!-- Relatório separado por modalidade -->
             <div id="relatorio-conteudo" class="space-y-8 text-sm"></div>
         </section>
 
@@ -179,8 +189,7 @@
 
     <!-- Scripts da Lógica -->
     <script>
-        // Estrutura Multi-Eventos (Salva no LocalStorage)
-        let bancoGeral = JSON.parse(localStorage.getItem('torneio_banco_multieventos_v2')) || {
+        let bancoGeral = JSON.parse(localStorage.getItem('torneio_banco_multieventos_v3')) || {
             eventoAtivoId: 'default_1',
             eventos: {
                 'default_1': {
@@ -202,12 +211,12 @@
 
         let timerAutoSave = null;
         let termoBuscaGlobal = "";
+        let secretariaOculta = false;
 
         function getEventoAtual() {
             return bancoGeral.eventos[bancoGeral.eventoAtivoId];
         }
 
-        // Gerenciamento de Sessão de Login
         function verificarSessao() {
             let logado = sessionStorage.getItem('torneio_logado');
             if (logado !== 'true') {
@@ -234,7 +243,7 @@
         verificarSessao();
 
         function salvarBanco(atualizarTela = true) {
-            localStorage.setItem('torneio_banco_multieventos_v2', JSON.stringify(bancoGeral));
+            localStorage.setItem('torneio_banco_multieventos_v3', JSON.stringify(bancoGeral));
             if (atualizarTela) {
                 renderizar();
             }
@@ -304,7 +313,6 @@
             }
         }
 
-        // Funções para gerenciar múltiplos eventos/escolas
         function abrirModalNovoEvento() {
             document.getElementById('input-novo-nome-evento').value = '';
             document.getElementById('modal-novo-evento').classList.remove('hidden');
@@ -336,7 +344,33 @@
             salvarBanco(true);
         }
 
-        // Sincronização automática com a Lista Universal baseada em todas as modalidades
+        function alternarVisibilidadeSecretaria() {
+            secretariaOculta = !secretariaOculta;
+            let el = document.getElementById('tabela-universal');
+            let btn = document.getElementById('btn-toggle-secretaria');
+            if (secretariaOculta) {
+                el.classList.add('hidden');
+                btn.innerHTML = '👁️ Mostrar Lista';
+            } else {
+                el.classList.remove('hidden');
+                btn.innerHTML = '👁️ Ocultar Lista';
+            }
+        }
+
+        function imprimirSecretaria() {
+            let secArea = document.getElementById('print-area-secretaria');
+            secArea.classList.add('print-secretaria-ativa');
+            window.print();
+            secArea.classList.remove('print-secretaria-ativa');
+        }
+
+        function imprimirRelatorio() {
+            let relArea = document.getElementById('print-area');
+            relArea.classList.add('print-relatorio-ativo');
+            window.print();
+            relArea.classList.remove('print-relatorio-ativo');
+        }
+
         function sincronizarListaUniversal() {
             let ev = getEventoAtual();
             let nomesEncontrados = new Set();
@@ -347,7 +381,6 @@
                 });
             });
 
-            // Adicionar novos que não estão na lista universal
             nomesEncontrados.forEach(nome => {
                 let existe = ev.atletasGeral.find(ag => ag.nome.toLowerCase() === nome.toLowerCase());
                 if (!existe) {
@@ -355,11 +388,9 @@
                 }
             });
 
-            // Remover quem foi totalmente apagado de todas as modalidades
             ev.atletasGeral = ev.atletasGeral.filter(ag => nomesEncontrados.has(ag.nome));
         }
 
-        // Protegido pela senha de Administração/Exclusão
         function alterarStatusTaxaAtleta(id) {
             pedirSenhaExclusaoEdicao(() => {
                 let ev = getEventoAtual();
@@ -626,7 +657,6 @@
             let ev = getEventoAtual();
             sincronizarListaUniversal();
 
-            // Renderizar seletor de eventos
             let selectEv = document.getElementById('select-evento-ativo');
             selectEv.innerHTML = Object.values(bancoGeral.eventos).map(e => `
                 <option value="${e.id}" ${e.id === bancoGeral.eventoAtivoId ? 'selected' : ''}>🏫 ${e.nomeEvento}</option>
@@ -639,11 +669,10 @@
             printHeaderVisual.innerHTML = `
                 ${logoHtml}
                 <h2 id="print-title" class="text-2xl font-bold text-white tracking-tight">${ev.nomeEvento}</h2>
-                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mt-1">Relatório Oficial de Inscrições, Pagamentos e Resultados</p>
+                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mt-1">Relatório Oficial de Resultados e Pódios por Modalidade</p>
             `;
 
-            // HTML da Tabela Universal para a tela e para o PDF
-            let gerarTabelaHtml = (paraImpressao = false) => {
+            let gerarTabelaHtml = () => {
                 if (ev.atletasGeral.length === 0) {
                     return `<p class="text-xs text-slate-500 italic py-3 text-center">Nenhum participante adicionado nas modalidades ainda. Cadastre participantes nas modalidades abaixo para visualizá-los aqui.</p>`;
                 }
@@ -666,16 +695,9 @@
                     });
                     let modsTexto = modsDoAtleta.length > 0 ? modsDoAtleta.join(', ') : '<span class="text-slate-600 italic">Nenhuma</span>';
 
-                    let badgeBtn = "";
-                    if (paraImpressao) {
-                        badgeBtn = a.status === 'pago' ? 
-                            `<span class="text-emerald-500 font-bold">🟢 PAGO</span>` : 
-                            `<span class="text-rose-500 font-bold">🔴 PENDENTE</span>`;
-                    } else {
-                        badgeBtn = a.status === 'pago' ? 
-                            `<button onclick="alterarStatusTaxaAtleta(${a.id})" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-semibold transition">Pago 🟢 (Exige Senha)</button>` : 
-                            `<button onclick="alterarStatusTaxaAtleta(${a.id})" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full font-semibold transition">Pendente 🔴 (Exige Senha)</button>`;
-                    }
+                    let badgeBtn = a.status === 'pago' ? 
+                        `<button onclick="alterarStatusTaxaAtleta(${a.id})" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-semibold transition">Pago 🟢 (Exige Senha)</button>` : 
+                        `<button onclick="alterarStatusTaxaAtleta(${a.id})" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full font-semibold transition">Pendente 🔴 (Exige Senha)</button>`;
                     
                     html += `<tr class="border-b border-slate-800/60 hover:bg-slate-950/40 transition">
                         <td class="py-3 px-2 font-medium text-slate-200">${a.nome}</td>
@@ -687,13 +709,7 @@
                 return html;
             };
 
-            document.getElementById('tabela-universal').innerHTML = gerarTabelaHtml(false);
-            document.getElementById('print-secretaria-container').innerHTML = `
-                <div class="space-y-2 border-b border-slate-800 pb-6">
-                    <h3 class="text-base font-bold text-white border-l-4 border-emerald-500 pl-3">💵 Relatório da Secretaria (Controle de Inscrições & Pagamentos)</h3>
-                    ${gerarTabelaHtml(true)}
-                </div>
-            `;
+            document.getElementById('tabela-universal').innerHTML = gerarTabelaHtml();
 
             let modContainer = document.getElementById('modalidades-container');
             let relatorioConteudo = document.getElementById('relatorio-conteudo');
