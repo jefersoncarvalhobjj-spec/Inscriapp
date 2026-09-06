@@ -29,7 +29,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
 
-    <!-- Cabeçalho Premium & Seletor de Eventos/Escolas -->
+    <!-- Cabeçalho Principal -->
     <header class="bg-slate-900/85 backdrop-blur-md border-b border-slate-800 text-white shadow-xl p-4 sticky top-0 z-50">
         <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
             <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
@@ -44,10 +44,9 @@
                 </div>
             </div>
 
-            <!-- Seletor de Eventos / Escolas (Sem o botão excluir aqui) -->
+            <!-- Seletor de Eventos / Controles -->
             <div class="flex items-center gap-2 w-full md:w-auto justify-end no-print">
                 <select id="select-evento-ativo" onchange="trocarEventoAtivo(this.value)" class="bg-slate-950 border border-slate-800 text-xs text-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <!-- Gerado via JS -->
                 </select>
                 <button onclick="abrirModalNovoEvento()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-2 rounded-xl font-medium transition shadow-sm whitespace-nowrap">+ Novo Evento</button>
                 <button onclick="abrirConfigAdmin()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs px-3 py-2 rounded-xl font-medium transition shadow-sm">⚙️ ADM</button>
@@ -72,7 +71,7 @@
         </div>
     </div>
 
-    <!-- Modal de Criar Novo Evento / Escola -->
+    <!-- Modal de Criar Novo Evento -->
     <div id="modal-novo-evento" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-2xl max-w-sm w-full space-y-4">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -81,13 +80,13 @@
             </div>
             <div>
                 <label class="block font-semibold text-slate-400 text-xs mb-1">Nome do Torneio / Escola:</label>
-                <input type="text" id="input-novo-nome-evento" placeholder="Ex: Escola Municipal X / Torneio B" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="text" id="input-novo-nome-evento" placeholder="Ex: Escola Municipal X" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
             <button onclick="criarNovoEvento()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl text-xs font-semibold transition shadow-lg shadow-emerald-600/20">Criar e Alternar</button>
         </div>
     </div>
 
-    <!-- Modal de Configurações do ADM (Com o Botão de Excluir Evento aqui dentro) -->
+    <!-- Modal de Configurações do ADM (Com Botão Excluir Evento) -->
     <div id="modal-config-adm" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-2xl max-w-md w-full space-y-5">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -100,7 +99,7 @@
                     <input type="text" id="adm-nome-evento" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div>
-                    <label class="block font-semibold text-slate-400 mb-1">URL da Logo do Evento/Escola (Opcional):</label>
+                    <label class="block font-semibold text-slate-400 mb-1">URL da Logo (Opcional):</label>
                     <input type="text" id="adm-logo-url" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="https://exemplo.com/logo.png">
                 </div>
                 <div>
@@ -108,11 +107,10 @@
                     <input type="email" id="adm-email-input" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div>
-                    <label class="block font-semibold text-slate-400 mb-1">Nova Senha de Exclusão/Avançada:</label>
+                    <label class="block font-semibold text-slate-400 mb-1">Nova Senha Avançada / Exclusão:</label>
                     <input type="password" id="adm-nova-senha-exclusao" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Deixar em branco para não alterar">
                 </div>
 
-                <!-- Botão de Excluir Evento posicionado no Painel ADM -->
                 <div class="pt-3 border-t border-slate-800">
                     <button onclick="excluirEventoAtual()" class="w-full bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 border border-rose-500/30 py-2.5 rounded-xl font-medium transition shadow-sm text-center">🗑️ Excluir Evento Atual</button>
                 </div>
@@ -127,18 +125,18 @@
     <!-- Conteúdo Principal -->
     <main class="max-w-4xl mx-auto p-4 md:p-6 flex-grow w-full space-y-6">
 
-        <!-- Barra de Pesquisa Global (Lupa) -->
+        <!-- Barra de Pesquisa Global -->
         <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-lg flex items-center gap-3 no-print">
             <span class="text-lg">🔍</span>
             <input type="text" id="input-busca-global" oninput="filtrarGlobal(this.value)" placeholder="Pesquisar modalidade ou atleta/time neste evento..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
         </div>
 
-        <!-- Seção 1: Lista Universal de Pagamentos / Secretaria -->
+        <!-- Seção 1: Secretaria (Pagamentos) -->
         <section id="print-area-secretaria" class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl space-y-4">
             <div class="border-b border-slate-800 pb-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div>
-                    <h2 class="text-base font-bold text-white flex items-center gap-2">💵 Secretaria: Controle e Inscrições (Pagamentos)</h2>
-                    <p class="text-xs text-slate-400 mt-0.5">Lista gerada automaticamente para a secretaria conferir recebimentos e dar o OK (protegido por senha).</p>
+                    <h2 class="text-base font-bold text-white flex items-center gap-2">💵 Secretaria: Controle e Inscrições</h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Lista geral de participantes sincronizada automaticamente das modalidades.</p>
                 </div>
                 <div class="flex items-center gap-2 no-print">
                     <button onclick="alternarVisibilidadeSecretaria()" id="btn-toggle-secretaria" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold transition shadow-sm flex items-center gap-1.5">
@@ -169,10 +167,10 @@
             </div>
         </section>
 
-        <!-- Container das Modalidades -->
+        <!-- Container das Modalidades Completo -->
         <section id="modalidades-container" class="space-y-6 no-print"></section>
 
-        <!-- Área de Impressão / Relatório Final de Resultados -->
+        <!-- Área de Impressão / Relatório Final -->
         <section id="print-area" class="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl shadow-xl space-y-6">
             <div id="print-header-visual" class="text-center border-b border-slate-800 pb-6"></div>
             
@@ -182,7 +180,6 @@
                 </button>
             </div>
 
-            <!-- Relatório separado por modalidade -->
             <div id="relatorio-conteudo" class="space-y-8 text-sm"></div>
         </section>
 
@@ -192,7 +189,7 @@
         Gestor de Torneios Pro • Multi-Eventos • PWA Offline Ready
     </footer>
 
-    <!-- Scripts da Lógica -->
+    <!-- Script Completo -->
     <script>
         let bancoGeral = JSON.parse(localStorage.getItem('torneio_banco_multieventos_v3')) || {
             eventoAtivoId: 'default_1',
@@ -254,7 +251,7 @@
             }
         }
 
-        function agendarAtualizacaoAuto(modId) {
+        function agendarAtualizacaoAuto() {
             clearTimeout(timerAutoSave);
             timerAutoSave = setTimeout(() => {
                 salvarBanco(true);
@@ -394,6 +391,11 @@
             relArea.classList.remove('print-relatorio-ativo');
         }
 
+        function filtrarGlobal(termo) {
+            termoBuscaGlobal = termo.toLowerCase();
+            renderizar();
+        }
+
         function sincronizarListaUniversal() {
             let ev = getEventoAtual();
             let nomesEncontrados = new Set();
@@ -497,7 +499,7 @@
                 if (novoTime === null) return;
                 let novosAtletas = prompt("Editar Elenco / Integrantes:", p.nomesAtletas);
                 if (novosAtletas === null) return;
-                let novaCat = prompt("Editar Categoria (Ex: Sub-12, Sub-15, Geral):", p.categoria);
+                let novaCat = prompt("Editar Categoria:", p.categoria);
                 if (novaCat === null) return;
 
                 if (novoTime.trim() !== "") {
@@ -553,7 +555,7 @@
             let ev = getEventoAtual();
             let mod = ev.modalidades.find(m => m.id === modId);
             mod.bateriasNatacao[batIndex].nadadores[nadIndex].tempo = valorTempo;
-            agendarAtualizacaoAuto(modId);
+            agendarAtualizacaoAuto();
         }
 
         function gerarEstrutura(modId, formato) {
@@ -568,18 +570,16 @@
                 if (parts.length === 3) {
                     estrutura = [
                         { fase: 'Semifinal', adv1: parts[0], p1: '', adv2: parts[1], p2: '' },
-                        { fase: 'Repescagem/Chave', adv1: 'Perdedor (Semifinal 1)', p1: '', adv2: parts[2], p2: '(Bye)' },
-                        { fase: 'Disputa de 3º Lugar', adv1: 'Perdedor (Semi 1 / Rep)', p1: '', adv2: 'Perdedor (Final)', p2: '' },
-                        { fase: 'Grande Final', adv1: 'Vencedor (Semifinal 1)', p1: '', adv2: 'Vencedor (Semifinal 2 / Outro)', p2: '' }
+                        { fase: 'Repescagem', adv1: 'Perdedor (Semifinal 1)', p1: '', adv2: parts[2], p2: '(Bye)' },
+                        { fase: 'Disputa de 3º Lugar', adv1: 'Perdedor', p1: '', adv2: 'Perdedor', p2: '' },
+                        { fase: 'Grande Final', adv1: 'Vencedor Semi 1', p1: '', adv2: 'Vencedor Outro', p2: '' }
                     ];
                 } else {
                     if (parts.length % 2 !== 0) parts.push('⭐ BYE (Folga)');
-                    
                     let semis = [];
                     for (let i = 0; i < parts.length; i += 2) {
-                        semis.push({ fase: 'Semifinal / Eliminatória', adv1: parts[i], p1: '', adv2: parts[i+1], p2: '' });
+                        semis.push({ fase: 'Eliminatória / Jogo', adv1: parts[i], p1: '', adv2: parts[i+1], p2: '' });
                     }
-                    
                     estrutura = [...semis];
                     estrutura.push({ fase: 'Disputa de 3º Lugar', adv1: 'Perdedor Jogo 1', p1: '', adv2: 'Perdedor Jogo 2', p2: '' });
                     estrutura.push({ fase: 'Grande Final', adv1: 'Vencedor Jogo 1', p1: '', adv2: 'Vencedor Jogo 2', p2: '' });
@@ -601,14 +601,23 @@
             let ev = getEventoAtual();
             let mod = ev.modalidades.find(m => m.id === modId);
             mod.estrutura[index][campo] = valor;
-            agendarAtualizacaoAuto(modId);
+            agendarAtualizacaoAuto();
         }
 
         function atualizarPlacarPontos(modId, index, campo, valor) {
             let ev = getEventoAtual();
             let mod = ev.modalidades.find(m => m.id === modId);
             mod.estrutura[index][campo] = valor;
-            agendarAtualizacaoAuto(modId);
+            agendarAtualizacaoAuto();
+        }
+
+        function atualizarPodio(modId, tipo, valor, indexArray = 0) {
+            let ev = getEventoAtual();
+            let mod = ev.modalidades.find(m => m.id === modId);
+            if (tipo === 'campeao') mod.podio.campeao = valor;
+            if (tipo === 'vice') mod.podio.vice = valor;
+            if (tipo === 'terceiro') mod.podio.terceiros[indexArray] = valor;
+            agendarAtualizacaoAuto();
         }
 
         function renderizar() {
@@ -626,7 +635,7 @@
                 selectEv.appendChild(opt);
             });
 
-            // Renderizar Lista Universal da Secretaria
+            // Renderizar Tabela da Secretaria
             let tabUn = document.getElementById('tabela-universal');
             if (ev.atletasGeral.length === 0) {
                 tabUn.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Nenhum participante cadastrado nas modalidades ainda.</p>`;
@@ -661,7 +670,7 @@
                 tabUn.innerHTML = html;
             }
 
-            // Renderizar Modalidades Container
+            // Renderizar Container de Modalidades com todas as ferramentas de atletas
             let modCont = document.getElementById('modalidades-container');
             modCont.innerHTML = '';
 
@@ -669,6 +678,8 @@
                 let div = document.createElement('div');
                 div.className = "bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl space-y-4";
                 
+                let matchesBusca = termoBuscaGlobal === "" || mod.nome.toLowerCase().includes(termoBuscaGlobal);
+
                 let htmlMod = `
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-800 pb-3">
                         <div>
@@ -681,6 +692,127 @@
                         </div>
                     </div>
                 `;
+
+                // Cadastro de Atletas / Participantes da Modalidade
+                if (mod.tipo === 'natacao') {
+                    htmlMod += `
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+                            <input type="text" id="input-mod-atleta-nat-${mod.id}" placeholder="Nome do Nadador" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input type="text" id="input-mod-cat-nat-${mod.id}" placeholder="Categoria (Ex: Juvenil)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <button onclick="adicionarParticipanteMod(${mod.id})" class="bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl py-2 text-xs font-semibold transition">Adicionar Nadador</button>
+                        </div>
+                    `;
+                } else {
+                    htmlMod += `
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+                            <input type="text" id="input-mod-equipe-${mod.id}" placeholder="${mod.tipo === 'individual' ? 'Nome do Atleta / Lutador' : 'Nome da Equipe / Time'}" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input type="text" id="input-mod-atletas-${mod.id}" placeholder="Elenco / Integrantes (Opcional)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <div class="flex gap-2">
+                                <input type="text" id="input-mod-cat-${mod.id}" placeholder="Categoria" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <button onclick="adicionarParticipanteMod(${mod.id})" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 rounded-xl text-xs font-semibold transition whitespace-nowrap">+ Adicionar</button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Tabela de Participantes Cadastrados na Modalidade
+                if (mod.participantes.length > 0) {
+                    htmlMod += `<div class="overflow-x-auto pt-2"><table class="w-full text-left text-xs border-collapse">
+                        <thead><tr class="border-b border-slate-800 text-slate-400">
+                            <th class="py-2 px-3">Participante / Equipe</th>
+                            <th class="py-2 px-3">${mod.tipo === 'natacao' ? 'Categoria' : 'Elenco / Integrantes'}</th>
+                            <th class="py-2 px-3">Categoria</th>
+                            <th class="py-2 px-3 text-right">Ações</th>
+                        </tr></thead><tbody class="divide-y divide-slate-800/60">`;
+                    
+                    mod.participantes.forEach((p, idx) => {
+                        htmlMod += `<tr>
+                            <td class="py-2 px-3 font-semibold text-slate-200">${p.nomeEquipe}</td>
+                            <td class="py-2 px-3 text-slate-400">${mod.tipo === 'natacao' ? '-' : (p.nomesAtletas || '-')}</td>
+                            <td class="py-2 px-3 text-indigo-400 font-medium">${p.categoria}</td>
+                            <td class="py-2 px-3 text-right space-x-1">
+                                <button onclick="editarParticipanteMod(${mod.id}, ${idx})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded text-[10px]">Editar</button>
+                                <button onclick="removerParticipanteMod(${mod.id}, ${idx})" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 px-2 py-1 rounded text-[10px]">Remover</button>
+                            </td>
+                        </tr>`;
+                    });
+                    htmlMod += `</tbody></table></div>`;
+                }
+
+                // Ferramentas de Chaveamento / Formatos
+                if (mod.tipo === 'natacao') {
+                    htmlMod += `
+                        <div class="pt-3 border-t border-slate-800 flex items-center gap-3">
+                            <span class="text-xs text-slate-400">Nadadores por Bateria:</span>
+                            <input type="number" min="2" max="8" value="${mod.participantesPorBateria || 4}" onchange="atualizarParticipantesPorBateria(${mod.id}, this.value)" class="w-16 bg-slate-950 border border-slate-800 text-xs text-center rounded-xl px-2 py-1.5 text-slate-200">
+                            <button onclick="gerarBateriasNatacao(${mod.id})" class="bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded-xl text-xs font-semibold transition">Gerar Baterias e Raias</button>
+                        </div>
+                    `;
+
+                    if (mod.bateriasNatacao && mod.bateriasNatacao.length > 0) {
+                        htmlMod += `<div class="space-y-4 pt-3">`;
+                        mod.bateriasNatacao.forEach((bat, batIdx) => {
+                            htmlMod += `<div class="bg-slate-950 p-3 rounded-2xl border border-slate-800/80 space-y-2">
+                                <h4 class="text-xs font-bold text-indigo-400">🏊‍♂️ Bateria ${bat.numeroBateria}</h4>
+                                <div class="overflow-x-auto"><table class="w-full text-left text-xs">
+                                    <thead><tr class="border-b border-slate-800 text-slate-400">
+                                        <th class="py-1 px-2">Raia</th>
+                                        <th class="py-1 px-2">Nadador</th>
+                                        <th class="py-1 px-2">Tempo</th>
+                                    </tr></thead>
+                                    <tbody class="divide-y divide-slate-800/40">`;
+                            bat.nadadores.forEach((nad, nadIdx) => {
+                                htmlMod += `<tr>
+                                    <td class="py-1.5 px-2 font-bold text-slate-300">Raia ${nad.posicaoNaBateria}</td>
+                                    <td class="py-1.5 px-2 text-slate-200 font-semibold">${nad.nomeEquipe}</td>
+                                    <td class="py-1.5 px-2"><input type="text" value="${nad.tempo || ''}" placeholder="00:00.00" oninput="atualizarTempoNadadorBateria(${mod.id}, ${batIdx}, ${nadIdx}, this.value)" class="bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs w-28 text-slate-200"></td>
+                                </tr>`;
+                            });
+                            htmlMod += `</tbody></table></div></div>`;
+                        });
+                        htmlMod += `</div>`;
+                    }
+                } else {
+                    htmlMod += `
+                        <div class="pt-3 border-t border-slate-800 flex flex-wrap gap-2 items-center">
+                            <span class="text-xs text-slate-400">Gerar Disputa:</span>
+                            <button onclick="gerarEstrutura(${mod.id}, 'mata-mata')" class="bg-violet-600 hover:bg-violet-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition">Mata-Mata / Chaves</button>
+                            <button onclick="gerarEstrutura(${mod.id}, 'pontos')" class="bg-violet-600 hover:bg-violet-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition">Pontos Corridos (Todos contra Todos)</button>
+                        </div>
+                    `;
+
+                    if (mod.formato === 'mata-mata' && mod.estrutura) {
+                        htmlMod += `<div class="space-y-2 pt-2"><h4 class="text-xs font-bold text-indigo-400">⚔️ Chaveamento Mata-Mata</h4>`;
+                        mod.estrutura.forEach((jogo, idx) => {
+                            htmlMod += `<div class="bg-slate-950 p-3 rounded-2xl border border-slate-800/80 flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+                                <span class="font-bold text-slate-400 w-32">${jogo.fase}</span>
+                                <div class="flex items-center gap-2 flex-grow justify-end">
+                                    <span class="text-slate-200 font-semibold text-right">${jogo.adv1}</span>
+                                    <input type="text" value="${jogo.p1}" oninput="atualizarPlacarMata(${mod.id}, ${idx}, 'p1', this.value)" placeholder="Placar" class="w-14 bg-slate-900 border border-slate-800 text-center rounded-lg py-1 text-slate-200 font-bold">
+                                    <span class="text-slate-500">vs</span>
+                                    <input type="text" value="${jogo.p2}" oninput="atualizarPlacarMata(${mod.id}, ${idx}, 'p2', this.value)" placeholder="Placar" class="w-14 bg-slate-900 border border-slate-800 text-center rounded-lg py-1 text-slate-200 font-bold">
+                                    <span class="text-slate-200 font-semibold">${jogo.adv2}</span>
+                                </div>
+                            </div>`;
+                        });
+                        htmlMod += `</div>`;
+                    } else if (mod.formato === 'pontos' && mod.estrutura) {
+                        htmlMod += `<div class="space-y-2 pt-2"><h4 class="text-xs font-bold text-indigo-400">📊 Tabela de Pontos Corridos</h4>`;
+                        mod.estrutura.forEach((confronto, idx) => {
+                            htmlMod += `<div class="bg-slate-950 p-3 rounded-2xl border border-slate-800/80 flex items-center justify-between gap-3 text-xs">
+                                <span class="text-slate-200 font-semibold w-1/3 text-right">${confronto.time1}</span>
+                                <div class="flex items-center gap-2">
+                                    <input type="text" value="${confronto.pl1}" oninput="atualizarPlacarPontos(${mod.id}, ${idx}, 'pl1', this.value)" placeholder="Gols" class="w-12 bg-slate-900 border border-slate-800 text-center rounded-lg py-1 text-slate-200 font-bold">
+                                    <span class="text-slate-500">X</span>
+                                    <input type="text" value="${confronto.pl2}" oninput="atualizarPlacarPontos(${mod.id}, ${idx}, 'pl2', this.value)" placeholder="Gols" class="w-12 bg-slate-900 border border-slate-800 text-center rounded-lg py-1 text-slate-200 font-bold">
+                                </div>
+                                <span class="text-slate-200 font-semibold w-1/3">${confronto.time2}</span>
+                            </div>`;
+                        });
+                        htmlMod += `</div>`;
+                    }
+                }
+
                 div.innerHTML = htmlMod;
                 modCont.appendChild(div);
             });
