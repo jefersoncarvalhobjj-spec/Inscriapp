@@ -50,6 +50,7 @@
                     <!-- Gerado via JS -->
                 </select>
                 <button onclick="abrirModalNovoEvento()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-2 rounded-xl font-medium transition shadow-sm whitespace-nowrap">+ Novo Evento</button>
+                <button onclick="excluirEventoAtual()" class="bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 border border-rose-500/30 text-xs px-3 py-2 rounded-xl font-medium transition shadow-sm whitespace-nowrap">🗑️ Excluir Evento</button>
                 <button onclick="abrirConfigAdmin()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs px-3 py-2 rounded-xl font-medium transition shadow-sm">⚙️ ADM</button>
                 <button onclick="sairDoApp()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs px-3 py-2 rounded-xl font-semibold transition">🔒 Sair</button>
             </div>
@@ -320,6 +321,23 @@
 
         function fecharModalNovoEvento() {
             document.getElementById('modal-novo-evento').classList.add('hidden');
+        }
+
+        function excluirEventoAtual() {
+            pedirSenhaExclusaoEdicao(() => {
+                let chaves = Object.keys(bancoGeral.eventos);
+                if (chaves.length <= 1) {
+                    alert("Você não pode excluir o único evento/escola restante no sistema.");
+                    return;
+                }
+                let evAtual = getEventoAtual();
+                if (confirm(`Tem certeza que deseja excluir permanentemente a escola/evento "${evAtual.nomeEvento}"?`)) {
+                    delete bancoGeral.eventos[bancoGeral.eventoAtivoId];
+                    bancoGeral.eventoAtivoId = Object.keys(bancoGeral.eventos)[0];
+                    salvarBanco();
+                    alert("Evento excluído com sucesso!");
+                }
+            });
         }
 
         function criarNovoEvento() {
