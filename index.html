@@ -29,7 +29,6 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
 
-    <!-- Cabeçalho Premium & Seletor de Eventos/Escolas -->
     <header class="bg-slate-900/85 backdrop-blur-md border-b border-slate-800 text-white shadow-xl p-4 sticky top-0 z-50">
         <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
             <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
@@ -44,11 +43,9 @@
                 </div>
             </div>
 
-            <!-- Seletor de Eventos / Escolas -->
             <div class="flex items-center gap-2 w-full md:w-auto justify-end no-print">
                 <select id="select-evento-ativo" onchange="trocarEventoAtivo(this.value)" class="bg-slate-950 border border-slate-800 text-xs text-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <!-- Gerado via JS -->
-                </select>
+                    </select>
                 <button onclick="abrirModalNovoEvento()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-2 rounded-xl font-medium transition shadow-sm whitespace-nowrap">+ Novo Evento</button>
                 <button onclick="abrirConfigAdmin()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs px-3 py-2 rounded-xl font-medium transition shadow-sm">⚙️ ADM</button>
                 <button onclick="sairDoApp()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs px-3 py-2 rounded-xl font-semibold transition">🔒 Sair</button>
@@ -56,7 +53,6 @@
         </div>
     </header>
 
-    <!-- Tela de Autenticação Inicial -->
     <div id="auth-screen" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl max-w-sm w-full space-y-6 text-center">
             <div class="w-16 h-16 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-2xl mx-auto flex items-center justify-center shadow-xl shadow-indigo-600/30 text-2xl">
@@ -72,7 +68,6 @@
         </div>
     </div>
 
-    <!-- Modal de Criar Novo Evento / Escola -->
     <div id="modal-novo-evento" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-2xl max-w-sm w-full space-y-4">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -87,7 +82,6 @@
         </div>
     </div>
 
-    <!-- Modal de Configurações do ADM -->
     <div id="modal-config-adm" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-2xl max-w-md w-full space-y-5">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -111,6 +105,12 @@
                     <label class="block font-semibold text-slate-400 mb-1">Nova Senha de Exclusão/Avançada:</label>
                     <input type="password" id="adm-nova-senha-exclusao" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Deixar em branco para não alterar">
                 </div>
+                
+                <div class="pt-3 border-t border-slate-800">
+                    <button onclick="excluirEventoAtual()" class="w-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 py-2.5 rounded-xl font-semibold transition flex items-center justify-center gap-2">
+                        🗑️ Excluir Este Evento / Escola Permanentemente
+                    </button>
+                </div>
             </div>
             <div class="flex gap-2 pt-2 border-t border-slate-800">
                 <button onclick="salvarConfigAdmin()" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition shadow-lg shadow-indigo-600/20">Salvar Alterações</button>
@@ -119,16 +119,16 @@
         </div>
     </div>
 
-    <!-- Conteúdo Principal -->
     <main class="max-w-4xl mx-auto p-4 md:p-6 flex-grow w-full space-y-6">
 
-        <!-- Barra de Pesquisa Global (Lupa) -->
-        <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-lg flex items-center gap-3 no-print">
-            <span class="text-lg">🔍</span>
-            <input type="text" id="input-busca-global" oninput="filtrarGlobal(this.value)" placeholder="Pesquisar modalidade ou atleta/time neste evento..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-lg flex flex-col gap-2 no-print">
+            <div class="flex items-center gap-3">
+                <span class="text-lg">🔍</span>
+                <input type="text" id="input-busca-global" oninput="filtrarGlobal(this.value)" placeholder="Pesquisar modalidade ou atleta/time neste evento..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div id="resultado-busca-participante" class="text-xs text-indigo-300 px-2 hidden"></div>
         </div>
 
-        <!-- Seção 1: Lista Universal de Pagamentos / Secretaria (Área de Impressão Isolada da Secretaria) -->
         <section id="print-area-secretaria" class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl space-y-4">
             <div class="border-b border-slate-800 pb-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div>
@@ -147,7 +147,6 @@
             <div id="tabela-universal" class="overflow-x-auto pt-1 transition-all duration-300"></div>
         </section>
 
-        <!-- Seção 2: Cadastro de Modalidades -->
         <section class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl no-print space-y-4">
             <div class="border-b border-slate-800 pb-3">
                 <h2 class="text-base font-bold text-white flex items-center gap-2">⚡ Gerenciar Modalidades e Formatos</h2>
@@ -164,10 +163,8 @@
             </div>
         </section>
 
-        <!-- Container das Modalidades -->
         <section id="modalidades-container" class="space-y-6 no-print"></section>
 
-        <!-- Área de Impressão / Relatório Final de Resultados -->
         <section id="print-area" class="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl shadow-xl space-y-6">
             <div id="print-header-visual" class="text-center border-b border-slate-800 pb-6"></div>
             
@@ -177,7 +174,6 @@
                 </button>
             </div>
 
-            <!-- Relatório separado por modalidade -->
             <div id="relatorio-conteudo" class="space-y-8 text-sm"></div>
         </section>
 
@@ -187,7 +183,6 @@
         Gestor de Torneios Pro • Multi-Eventos • PWA Offline Ready
     </footer>
 
-    <!-- Scripts da Lógica -->
     <script>
         let bancoGeral = JSON.parse(localStorage.getItem('torneio_banco_multieventos_v3')) || {
             eventoAtivoId: 'default_1',
@@ -302,6 +297,26 @@
             salvarBanco();
             fecharConfigAdmin();
             alert("Configurações atualizadas!");
+        }
+
+        // Função para Excluir Evento Atual na Aba de Administrador
+        function excluirEventoAtual() {
+            let chavesEventos = Object.keys(bancoGeral.eventos);
+            if (chavesEventos.length <= 1) {
+                return alert("Você não pode excluir o único evento restante no sistema. Crie um novo evento antes de excluir este.");
+            }
+
+            if (confirm("Tem certeza que deseja excluir permanentemente este evento e todos os seus dados?")) {
+                let idParaExcluir = bancoGeral.eventoAtivoId;
+                delete bancoGeral.eventos[idParaExcluir];
+                
+                // Define o próximo evento ativo disponível
+                bancoGeral.eventoAtivoId = Object.keys(bancoGeral.eventos)[0];
+                
+                salvarBanco();
+                fecharConfigAdmin();
+                alert("Evento excluído com sucesso!");
+            }
         }
 
         function pedirSenhaExclusaoEdicao(callback) {
@@ -671,6 +686,21 @@
                 <h2 id="print-title" class="text-2xl font-bold text-white tracking-tight">${ev.nomeEvento}</h2>
                 <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mt-1">Relatório Oficial de Resultados e Pódios por Modalidade</p>
             `;
+
+            // Lógica para calcular e exibir quantas modalidades o participante digitado na busca está inscrito
+            let divResumoBusca = document.getElementById('resultado-busca-participante');
+            if (termoBuscaGlobal.length > 0) {
+                let atletaEncontrado = ev.atletasGeral.find(ag => ag.nome.toLowerCase().includes(termoBuscaGlobal));
+                if (atletaEncontrado) {
+                    let modsDoAtleta = ev.modalidades.filter(m => m.participantes.some(p => p.nomeEquipe.toLowerCase() === atletaEncontrado.nome.toLowerCase()));
+                    divResumoBusca.innerHTML = `👤 Participante: <strong>${atletaEncontrado.nome}</strong> está inscrito em <strong>${modsDoAtleta.length}</strong> modalidade(s): ${modsDoAtleta.map(m => m.nome).join(', ') || 'Nenhuma'}.`;
+                    divResumoBusca.classList.remove('hidden');
+                } else {
+                    divResumoBusca.classList.add('hidden');
+                }
+            } else {
+                divResumoBusca.classList.add('hidden');
+            }
 
             let gerarTabelaHtml = () => {
                 if (ev.atletasGeral.length === 0) {
