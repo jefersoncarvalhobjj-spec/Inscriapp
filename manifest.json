@@ -1,22 +1,212 @@
-{
-  "name": "Gestor de Torneios Pro",
-  "short_name": "Torneios",
-  "start_url": "index.html",
-  "display": "standalone",
-  "background_color": "#4f46e5",
-  "theme_color": "#4f46e5",
-  "icons": [
-    {
-      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9H4.5a2.5 2.5 0 0 1 0-5H6'></path><path d='M18 9h1.5a2.5 2.5 0 0 0 0-5H18'></path><path d='M4 22h16'></path><path d='M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22'></path><path d='M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22'></path><path d='M18 2H6v7a6 6 0 0 0 12 0V2Z'></path></svg>",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9H4.5a2.5 2.5 0 0 1 0-5H6'></path><path d='M18 9h1.5a2.5 2.5 0 0 0 0-5H18'></path><path d='M4 22h16'></path><path d='M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22'></path><path d='M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22'></path><path d='M18 2H6v7a6 6 0 0 0 12 0V2Z'></path></svg>",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
-  ]
-}
+function renderizar() {
+            let ev = getEventoAtual();
+            document.getElementById('event-title-display').innerText = ev.nomeEvento;
+
+            // Renderizar seletor de eventos
+            let selectEv = document.getElementById('select-evento-ativo');
+            selectEv.innerHTML = '';
+            Object.values(bancoGeral.eventos).forEach(e => {
+                let opt = document.createElement('option');
+                opt.value = e.id;
+                opt.innerText = e.nomeEvento;
+                if (e.id === bancoGeral.eventoAtivoId) opt.selected = true;
+                selectEv.appendChild(opt);
+            });
+
+            // Renderizar Tabela da Secretaria
+            let tabUn = document.getElementById('tabela-universal');
+            if (ev.atletasGeral.length === 0) {
+                tabUn.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Nenhum participante cadastrado nas modalidades ainda.</p>`;
+            } else {
+                let html = `<table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-800 text-slate-400">
+                            <th class="py-2 px-3">Participante / Equipe</th>
+                            <th class="py-2 px-3">Status Inscrição / Taxa</th>
+                            <th class="py-2 px-3 text-right no-print">Ações (ADM)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60">`;
+                
+                ev.atletasGeral.forEach(atg => {
+                    let pago = atg.status === 'pago';
+                    html += `<tr>
+                        <td class="py-2.5 px-3 font-semibold text-slate-200">${atg.nome}</td>
+                        <td class="py-2.5 px-3">
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold ${pago ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                                ${pago ? '✅ Pago / Confirmado' : '⏳ Pendente'}
+                            </span>
+                        </td>
+                        <td class="py-2.5 px-3 text-right no-print">
+                            <button onclick="alterarStatusTaxaAtleta(${atg.id})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg text-[10px] font-medium transition">
+                                Alternar Status
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+                tabUn.innerHTML = html;
+            }
+
+            // Renderizar Container de Modalidades com Filtro de Busca Corrigido
+            let modCont = document.getElementById('modalidades-container');
+            modCont.innerHTML = '';
+
+            let modalidadesFiltradas = ev.modalidades.filter(mod => {
+                if (termoBuscaGlobal === "") return true;
+                // Verifica se o termo bate com o nome da modalidade
+                let matchMod = mod.nome.toLowerCase().includes(termoBuscaGlobal);
+                // Ou se bate com o nome de algum participante / atleta da modalidade
+                let matchAtleta = mod.participantes.some(p => 
+                    p.nomeEquipe.toLowerCase().includes(termoBuscaGlobal) || 
+                    (p.nomesAtletas && p.nomesAtletas.toLowerCase().includes(termoBuscaGlobal))
+                );
+                return matchMod || matchAtleta;
+            });
+
+            if (modalidadesFiltradas.length === 0) {
+                modCont.innerHTML = `<div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl text-center text-xs text-slate-500">Nenhuma modalidade ou atleta encontrado para "${termoBuscaGlobal}".</div>`;
+                return;
+            }
+
+            modalidadesFiltradas.forEach(mod => {
+                let div = document.createElement('div');
+                div.className = "bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl space-y-4";
+                
+                let htmlMod = `
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-800 pb-3">
+                        <div>
+                            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                📌 ${mod.nome} <span class="text-[10px] text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20 uppercase">${mod.tipo}</span>
+                            </h3>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="excluirModalidade(${mod.id})" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs px-3 py-1.5 rounded-xl border border-rose-500/30 transition">Excluir Modalidade</button>
+                        </div>
+                    </div>
+                `;
+
+                // Cadastro de Atletas / Participantes da Modalidade
+                if (mod.tipo === 'natacao') {
+                    htmlMod += `
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+                            <input type="text" id="input-mod-atleta-nat-${mod.id}" placeholder="Nome do Nadador" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input type="text" id="input-mod-cat-nat-${mod.id}" placeholder="Categoria (Ex: Juvenil)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <button onclick="adicionarParticipanteMod(${mod.id})" class="bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl py-2 text-xs font-semibold transition">Adicionar Nadador</button>
+                        </div>
+                    `;
+                } else {
+                    htmlMod += `
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+                            <input type="text" id="input-mod-equipe-${mod.id}" placeholder="${mod.tipo === 'individual' ? 'Nome do Atleta / Lutador' : 'Nome da Equipe / Time'}" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input type="text" id="input-mod-atletas-${mod.id}" placeholder="Elenco / Integrantes (Opcional)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <div class="flex gap-2">
+                                <input type="text" id="input-mod-cat-${mod.id}" placeholder="Categoria" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <button onclick="adicionarParticipanteMod(${mod.id})" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 rounded-xl text-xs font-semibold transition whitespace-nowrap">+ Adicionar</button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Tabela de Participantes Cadastrados na Modalidade
+                if (mod.participantes.length > 0) {
+                    htmlMod += `<div class="overflow-x-auto pt-2"><table class="w-full text-left text-xs border-collapse">
+                        <thead><tr class="border-b border-slate-800 text-slate-400">
+                            <th class="py-2 px-3">Participante / Equipe</th>
+                            <th class="py-2 px-3">${mod.tipo === 'natacao' ? 'Categoria' : 'Elenco / Integrantes'}</th>
+                            <th class="py-2 px-3">Categoria</th>
+                            <th class="py-2 px-3 text-right">Ações</th>
+                        </tr></thead><tbody class="divide-y divide-slate-800/60">`;
+                    
+                    mod.participantes.forEach((p, idx) => {
+                        htmlMod += `<tr>
+                            <td class="py-2 px-3 font-semibold text-slate-200">${p.nomeEquipe}</td>
+                            <td class="py-2 px-3 text-slate-400">${mod.tipo === 'natacao' ? '-' : (p.nomesAtletas || '-')}</td>
+                            <td class="py-2 px-3 text-indigo-400 font-medium">${p.categoria}</td>
+                            <td class="py-2 px-3 text-right space-x-1">
+                                <button onclick="editarParticipanteMod(${mod.id}, ${idx})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded text-[10px]">Editar</button>
+                                <button onclick="removerParticipanteMod(${mod.id}, ${idx})" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 px-2 py-1 rounded text-[10px]">Remover</button>
+                            </td>
+                        </tr>`;
+                    });
+                    htmlMod += `</tbody></table></div>`;
+                }
+
+                // Ferramentas de Chaveamento / Formatos
+                if (mod.tipo === 'natacao') {
+                    htmlMod += `
+                        <div class="pt-3 border-t border-slate-800 flex items-center gap-3">
+                            <span class="text-xs text-slate-400">Nadadores por Bateria:</span>
+                            <input type="number" min="2" max="8" value="${mod.participantesPorBateria || 4}" onchange="atualizarParticipantesPorBateria(${mod.id}, this.value)" class="w-16 bg-slate-950 border border-slate-800 text-xs text-center rounded-xl px-2 py-1.5 text-slate-200">
+                            <button onclick="gerarBateriasNatacao(${mod.id})" class="bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded-xl text-xs font-semibold transition">Gerar Baterias e Raias</button>
+                        </div>
+                    `;
+
+                    if (mod.bateriasNatacao && mod.bateriasNatacao.length > 0) {
+                        htmlMod += `<div class="space-y-4 pt-3">`;
+                        mod.bateriasNatacao.forEach((bat, batIdx) => {
+                            htmlMod += `<div class="bg-slate-950 p-3 rounded-2xl border border-slate-800/80 space-y-2">
+                                <h4 class="text-xs font-bold text-indigo-400">🏊‍♂️ Bateria ${bat.numeroBateria}</h4>
+                                <div class="overflow-x-auto"><table class="w-full text-left text-xs">
+                                    <thead><tr class="border-b border-slate-800 text-slate-400">
+                                        <th class="py-1 px-2">Raia</th>
+                                        <th class="py-1 px-2">Nadador</th>
+                                        <th class="py-1 px-2">Tempo</th>
+                                    </tr></thead>
+                                    <tbody class="divide-y divide-slate-800/40">`;
+                            bat.nadadores.forEach((nad, nadIdx) => {
+                                htmlMod += `<tr>
+                                    <td class="py-1.5 px-2 font-bold text-slate-300">Raia ${nad.posicaoNaBateria}</td>
+                                    <td class="py-1.5 px-2 text-slate-200 font-semibold">${nad.nomeEquipe}</td>
+                                    <td class="py-1.5 px-2"><input type="text" value="${nad.tempo || ''}" placeholder="00:00.00" oninput="atualizarTempoNadadorBateria(${mod.id}, ${batIdx}, ${nadIdx}, this.value)" class="bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs w-28 text-slate-200"></td>
+                                </tr>`;
+                            });
+                            htmlMod += `</tbody></table></div></div>`;
+                        });
+                        htmlMod += `</div>`;
+                    }
+                } else {
+                    htmlMod += `
+                        <div class="pt-3 border-t border-slate-800 flex flex-wrap gap-2 items-center">
+                            <span class="text-xs text-slate-400">Gerar Disputa:</span>
+                            <button onclick="gerarEstrutura(${mod.id}, 'mata-mata')" class="bg-violet-600 hover:bg-violet-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition">Mata-Mata / Chaves</button>
+                            <button onclick="gerarEstrutura(${mod.id}, 'pontos')" class="bg-violet-600 hover:bg-violet-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition">Pontos Corridos (Todos contra Todos)</button>
+                        </div>
+                    `;
+
+                    if (mod.formato === 'mata-mata' && mod.estrutura) {
+                        htmlMod += `<div class="space-y-2 pt-2"><h4 class="text-xs font-bold text-indigo-400">⚔️ Chaveamento Mata-Mata</h4>`;
+                        mod.estrutura.forEach((jogo, idx) => {
+                            htmlMod += `<div class="bg-slate-950 p-3 rounded-2xl border border-slate-800/80 flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+                                <span class="font-bold text-slate-400 w-32">${jogo.fase}</span>
+                                <div class="flex items-center gap-2 flex-grow justify-end">
+                                    <span class="text-slate-200 font-semibold text-right">${jogo.adv1}</span>
+                                    <input type="text" value="${jogo.p1}" oninput="atualizarPlacarMata(${mod.id}, ${idx}, 'p1', this.value)" placeholder="Placar" class="w-14 bg-slate-900 border border-slate-800 text-center rounded-lg py-1 text-slate-200 font-bold">
+                                    <span class="text-slate-500">vs</span>
+                                    <input type="text" value="${jogo.p2}" oninput="atualizarPlacarMata(${mod.id}, ${idx}, 'p2', this.value)" placeholder="Placar" class="w-14 bg-slate-900 border border-slate-800 text-center rounded-lg py-1 text-slate-200 font-bold">
+                                    <span class="text-slate-200 font-semibold">${jogo.adv2}</span>
+                                </div>
+                            </div>`;
+                        });
+                        htmlMod += `</div>`;
+                    } else if (mod.formato === 'pontos' && mod.estrutura) {
+                        htmlMod += `<div class="space-y-2 pt-2"><h4 class="text-xs font-bold text-indigo-400">📊 Tabela de Pontos Corridos</h4>`;
+                        mod.estrutura.forEach((confronto, idx) => {
+                            htmlMod += `<div class="bg-slate-950 p-3 rounded-2xl border border-slate-800/80 flex items-center justify-between gap-3 text-xs">
+                                <span class="text-slate-200 font-semibold w-1/3 text-right">${confronto.time1}</span>
+                                <div class="flex items-center gap-2">
+                                    <input type="text" value="${confronto.pl1}" oninput="atualizarPlacarPontos(${mod.id}, ${idx}, 'pl1', this.value)" placeholder="Gols" class="w-12 bg-slate-900 border border-slate-800 text-center rounded-lg py-1 text-slate-200 font-bold">
+                                    <span class="text-slate-500">X</span>
+                                    <input type="text" value="${confronto.pl2}" oninput="atualizarPlacarPontos(${mod.id}, ${idx}, 'pl2', this.value)" placeholder="Gols" class="w-12 bg-slate-900 border border-slate-800 text-center rounded-lg py-1 text-slate-200 font-bold">
+                                </div>
+                                <span class="text-slate-200 font-semibold w-1/3">${confronto.time2}</span>
+                            </div>`;
+                        });
+                        htmlMod += `</div>`;
+                    }
+                }
+
+                div.innerHTML = htmlMod;
+                modCont.appendChild(div);
+            });
+        }
