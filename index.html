@@ -152,55 +152,62 @@
             <div id="resultado-busca-participante" class="text-xs text-indigo-300 px-2 hidden"></div>
         </div>
 
-        <!-- NOVO PAINEL: Quadro Geral de Pontuação e Calculadora de Compra de Medalhas -->
+        <!-- PAINEL: Quadro Geral de Pontuação e Calculadora de Compra de Medalhas (Com Aba Ocultar) -->
         <section class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl space-y-5">
-            <div class="border-b border-slate-800 pb-3">
-                <h2 class="text-base font-bold text-white flex items-center gap-2">🏅 Quadro Geral de Pontuação & Calculadora de Medalhas</h2>
-                <p class="text-xs text-slate-400 mt-0.5">Pontuação em tempo real (1º=9pts, 2º=6pts, 3º=3pts) e cálculo automático da quantidade de medalhas para compra por equipe considerando todos os atletas do elenco.</p>
+            <div class="border-b border-slate-800 pb-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                <div>
+                    <h2 class="text-base font-bold text-white flex items-center gap-2">🏅 Quadro Geral & Calculadora de Compra de Medalhas</h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Pontuação (1º=9pts, 2º=6pts, 3º=3pts) e cálculo total de medalhas para compra considerando todos os integrantes das equipes vencedoras (suporta múltiplos 3º lugares).</p>
+                </div>
+                <button onclick="alternarVisibilidadeQuadroGeral()" id="btn-toggle-quadro" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold transition shadow-sm flex items-center gap-1.5 whitespace-nowrap no-print">
+                    👁️ Ocultar Quadro
+                </button>
             </div>
 
-            <!-- Resumo para Compra de Medalhas -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div class="bg-amber-500/10 border border-amber-500/30 p-3.5 rounded-2xl flex items-center gap-3">
-                    <span class="text-2xl">🥇</span>
-                    <div>
-                        <span class="text-[10px] uppercase font-bold text-amber-400 block tracking-wider">Total Medalhas de Ouro</span>
-                        <span id="calc-ouro-total" class="text-lg font-extrabold text-white">0</span>
+            <div id="container-conteudo-quadro" class="space-y-5 transition-all duration-300">
+                <!-- Resumo para Compra de Medalhas -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="bg-amber-500/10 border border-amber-500/30 p-3.5 rounded-2xl flex items-center gap-3">
+                        <span class="text-2xl">🥇</span>
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-amber-400 block tracking-wider">Comprar Medalhas de Ouro</span>
+                            <span id="calc-ouro-total" class="text-lg font-extrabold text-white">0</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-300/10 border border-slate-300/30 p-3.5 rounded-2xl flex items-center gap-3">
+                        <span class="text-2xl">🥈</span>
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-300 block tracking-wider">Comprar Medalhas de Prata</span>
+                            <span id="calc-prata-total" class="text-lg font-extrabold text-white">0</span>
+                        </div>
+                    </div>
+                    <div class="bg-amber-700/10 border border-amber-700/30 p-3.5 rounded-2xl flex items-center gap-3">
+                        <span class="text-2xl">🥉</span>
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-amber-600 block tracking-wider">Comprar Medalhas de Bronze</span>
+                            <span id="calc-bronze-total" class="text-lg font-extrabold text-white">0</span>
+                        </div>
                     </div>
                 </div>
-                <div class="bg-slate-300/10 border border-slate-300/30 p-3.5 rounded-2xl flex items-center gap-3">
-                    <span class="text-2xl">🥈</span>
-                    <div>
-                        <span class="text-[10px] uppercase font-bold text-slate-300 block tracking-wider">Total Medalhas de Prata</span>
-                        <span id="calc-prata-total" class="text-lg font-extrabold text-white">0</span>
-                    </div>
-                </div>
-                <div class="bg-amber-700/10 border border-amber-700/30 p-3.5 rounded-2xl flex items-center gap-3">
-                    <span class="text-2xl">🥉</span>
-                    <div>
-                        <span class="text-[10px] uppercase font-bold text-amber-600 block tracking-wider">Total Medalhas de Bronze</span>
-                        <span id="calc-bronze-total" class="text-lg font-extrabold text-white">0</span>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Tabela de Pontuação Geral das Equipes -->
-            <div class="overflow-x-auto pt-2">
-                <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">📊 Pontuação das Equipes em Tempo Real</h3>
-                <table class="w-full text-left text-xs border-collapse">
-                    <thead>
-                        <tr class="border-b border-slate-800 text-slate-400 font-semibold">
-                            <th class="py-2.5 px-3">Pos / Equipe</th>
-                            <th class="py-2.5 px-3 text-center">🥇 Ouro</th>
-                            <th class="py-2.5 px-3 text-center">🥈 Prata</th>
-                            <th class="py-2.5 px-3 text-center">🥉 Bronze</th>
-                            <th class="py-2.5 px-3 text-center font-bold text-indigo-400">PONTUAÇÃO TOTAL</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabela-pontuacao-corpo">
-                        <!-- Gerado via JS -->
-                    </tbody>
-                </table>
+                <!-- Tabela de Pontuação Geral das Equipes -->
+                <div class="overflow-x-auto pt-2">
+                    <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">📊 Pontuação das Equipes em Tempo Real</h3>
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400 font-semibold">
+                                <th class="py-2.5 px-3">Pos / Equipe</th>
+                                <th class="py-2.5 px-3 text-center">🥇 Ouro</th>
+                                <th class="py-2.5 px-3 text-center">🥈 Prata</th>
+                                <th class="py-2.5 px-3 text-center">🥉 Bronze</th>
+                                <th class="py-2.5 px-3 text-center font-bold text-indigo-400">PONTUAÇÃO TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-pontuacao-corpo">
+                            <!-- Gerado via JS -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
@@ -297,6 +304,7 @@
         let timerAutoSave = null;
         let termoBuscaGlobal = "";
         let secretariaOculta = false;
+        let quadroGeralOculto = false;
 
         function getEventoAtual() {
             return bancoGeral.eventos[bancoGeral.eventoAtivoId];
@@ -443,6 +451,19 @@
         function trocarEventoAtivo(idEv) {
             bancoGeral.eventoAtivoId = idEv;
             salvarBanco(true);
+        }
+
+        function alternarVisibilidadeQuadroGeral() {
+            quadroGeralOculto = !quadroGeralOculto;
+            let el = document.getElementById('container-conteudo-quadro');
+            let btn = document.getElementById('btn-toggle-quadro');
+            if (quadroGeralOculto) {
+                el.classList.add('hidden');
+                btn.innerHTML = '👁️ Mostrar Quadro';
+            } else {
+                el.classList.remove('hidden');
+                btn.innerHTML = '👁️ Ocultar Quadro';
+            }
         }
 
         function alternarVisibilidadeSecretaria() {
@@ -749,25 +770,22 @@
             }
         }
 
-        // Função para calcular o número total de atletas/componentes de uma equipe premiada
+        // Função inteligente para somar a quantidade real de atletas/componentes para compra de medalhas
         function contarAtletasEquipe(mod, nomeEquipe) {
             if (!nomeEquipe || !nomeEquipe.trim()) return 0;
             let nomeLimpo = nomeEquipe.trim().toLowerCase();
             let p = mod.participantes.find(part => part.nomeEquipe.trim().toLowerCase() === nomeLimpo);
-            if (!p) return 1; // Se não achar o registro exato, conta como 1 (o próprio nome)
+            if (!p) return 1; // Se for um nome avulso sem cadastro detalhado, conta como 1
             
             if (!p.nomesAtletas || p.nomesAtletas.trim() === "") return 1;
-            // Conta os atletas separados por vírgula ou ponto e vírgula, mais o próprio líder/nome
             let lista = p.nomesAtletas.split(/[,;]+/).filter(item => item.trim() !== "");
-            return Math.max(1, lista.length + 1);
+            return Math.max(1, lista.length + 1); // 1 do líder/nome + quantidade de integrantes listados
         }
 
-        // Função para processar o Quadro Geral de Medalhas e Pontos
         function calcularQuadroGeral() {
             let ev = getEventoAtual();
             let equipesMap = {};
 
-            // Garante que todas as equipes inscritas apareçam no quadro
             ev.atletasGeral.forEach(ag => {
                 equipesMap[ag.nome.trim()] = { nome: ag.nome.trim(), ouro: 0, prata: 0, bronze: 0, pontos: 0, medalhasFisicasOuro: 0, medalhasFisicasPrata: 0, medalhasFisicasBronze: 0 };
             });
@@ -805,7 +823,7 @@
                     totalPrataFisico += qtdMembros;
                 }
 
-                // 3º Lugares (Podium / Suporta múltiplos) -> 3 pontos cada
+                // 3º Lugares (Suporta múltiplos terceiros lugares) -> 3 pontos cada
                 if (mod.podio.terceiros && Array.isArray(mod.podio.terceiros)) {
                     mod.podio.terceiros.forEach(t => {
                         if (t && t.trim() !== "") {
@@ -824,7 +842,6 @@
             });
 
             let listaEquipes = Object.values(equipesMap);
-            // Ordenação: Pontos desc, Ouro desc, Prata desc, Bronze desc
             listaEquipes.sort((a, b) => b.pontos - a.pontos || b.ouro - a.ouro || b.prata - a.prata || b.bronze - a.bronze);
 
             return {
@@ -879,7 +896,7 @@
                 divResumoBusca.classList.add('hidden');
             }
 
-            // Renderizar Calculadora e Quadro Geral de Medalhas / Pontuação
+            // Renderizar Calculadora e Quadro Geral
             let dadosQuadro = calcularQuadroGeral();
             document.getElementById('calc-ouro-total').innerText = dadosQuadro.totalOuroFisico;
             document.getElementById('calc-prata-total').innerText = dadosQuadro.totalPrataFisico;
@@ -900,7 +917,7 @@
                 `).join('');
             }
 
-            // Geração da Secretaria Separada por Modalidade e por Categoria (A, B, etc.)
+            // Secretaria Separada por Modalidade e Categoria
             let gerarTabelaSecretariaHtml = () => {
                 if (ev.modalidades.length === 0) {
                     return `<p class="text-xs text-slate-500 italic py-3 text-center">Nenhuma modalidade cadastrada ainda. Crie modalidades abaixo para gerar o controle da secretaria.</p>`;
