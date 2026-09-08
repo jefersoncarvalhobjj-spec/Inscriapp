@@ -15,7 +15,17 @@
             .print-relatorio-ativo * { visibility: visible; }
             
             #print-area-secretaria.print-secretaria-ativa { 
-                position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; background: white !important; 
+                position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; background: white !important; color: black !important;
+            }
+            #print-area-secretaria.print-secretaria-ativa * { 
+                color: black !important; 
+            }
+            #print-area-secretaria.print-secretaria-ativa table th {
+                background: #f1f5f9 !important;
+                border-bottom: 2px solid #cbd5e1 !important;
+            }
+            #print-area-secretaria.print-secretaria-ativa tr {
+                border-bottom: 1px solid #e2e8f0 !important;
             }
             #print-area.print-relatorio-ativo { 
                 position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; background: white !important; 
@@ -735,7 +745,7 @@
                 let html = `<table class="w-full text-left text-xs border-collapse">
                     <thead>
                         <tr class="border-b border-slate-800 text-slate-400 font-semibold">
-                            <th class="py-2.5 px-2">Participante / Atleta / Equipe</th>
+                            <th class="py-2.5 px-2">Participante / Atleta / Equipe e Integrantes</th>
                             <th class="py-2.5 px-2">Modalidade(s) Vinculada(s)</th>
                             <th class="py-2.5 px-2 text-center">Status da Inscrição (Taxa)</th>
                         </tr>
@@ -744,19 +754,33 @@
                 
                 ev.atletasGeral.forEach(a => {
                     let modsDoAtleta = [];
+                    let listaElencos = [];
+
                     ev.modalidades.forEach(m => {
-                        if (m.participantes.some(p => p.nomeEquipe.toLowerCase() === a.nome.toLowerCase() || (p.nomesAtletas && p.nomesAtletas.toLowerCase().includes(a.nome.toLowerCase())))) {
-                            modsDoAtleta.push(m.nome);
-                        }
+                        m.participantes.forEach(p => {
+                            if (p.nomeEquipe.toLowerCase() === a.nome.toLowerCase() || (p.nomesAtletas && p.nomesAtletas.toLowerCase().includes(a.nome.toLowerCase()))) {
+                                if (!modsDoAtleta.includes(m.nome)) {
+                                    modsDoAtleta.push(m.nome);
+                                }
+                                if (p.nomesAtletas && p.nomesAtletas.trim() !== "" && !listaElencos.includes(p.nomesAtletas)) {
+                                    listaElencos.push(p.nomesAtletas);
+                                }
+                            }
+                        });
                     });
+
                     let modsTexto = modsDoAtleta.length > 0 ? modsDoAtleta.join(', ') : '<span class="text-slate-600 italic">Nenhuma</span>';
+                    let elencoTexto = listaElencos.length > 0 ? `<span class="text-slate-400 text-[11px] block mt-0.5">👥 Elenco/Componentes: ${listaElencos.join(' | ')}</span>` : '';
 
                     let badgeBtn = a.status === 'pago' ? 
                         `<button onclick="alterarStatusTaxaAtleta(${a.id})" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-semibold transition">Pago 🟢 (Exige Senha)</button>` : 
                         `<button onclick="alterarStatusTaxaAtleta(${a.id})" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full font-semibold transition">Pendente 🔴 (Exige Senha)</button>`;
                     
                     html += `<tr class="border-b border-slate-800/60 hover:bg-slate-950/40 transition">
-                        <td class="py-3 px-2 font-medium text-slate-200">${a.nome}</td>
+                        <td class="py-3 px-2 font-medium text-slate-200">
+                            <div>${a.nome}</div>
+                            ${elencoTexto}
+                        </td>
                         <td class="py-3 px-2 text-slate-400">${modsTexto}</td>
                         <td class="py-3 px-2 text-center">${badgeBtn}</td>
                     </tr>`;
