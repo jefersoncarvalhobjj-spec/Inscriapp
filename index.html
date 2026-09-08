@@ -15,7 +15,7 @@
             .print-relatorio-ativo * { visibility: visible; }
             
             #print-area-secretaria.print-secretaria-ativa { 
-                position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; background: white !important; color: black !important;
+                position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 15px; background: white !important; color: black !important;
             }
             #print-area-secretaria.print-secretaria-ativa * { 
                 color: black !important; 
@@ -23,9 +23,12 @@
             #print-area-secretaria.print-secretaria-ativa table th {
                 background: #f1f5f9 !important;
                 border-bottom: 2px solid #cbd5e1 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
             #print-area-secretaria.print-secretaria-ativa tr {
-                border-bottom: 1px solid #e2e8f0 !important;
+                border-bottom: 1px solid #cbd5e1 !important;
+                page-break-inside: avoid;
             }
             #print-area.print-relatorio-ativo { 
                 position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; background: white !important; 
@@ -149,12 +152,12 @@
             <div id="resultado-busca-participante" class="text-xs text-indigo-300 px-2 hidden"></div>
         </div>
 
-        <!-- Seção 1: Lista Universal de Pagamentos / Secretaria -->
+        <!-- Seção 1: Lista Universal de Pagamentos / Secretaria Separada por Modalidade e Categoria -->
         <section id="print-area-secretaria" class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl space-y-4">
             <div class="border-b border-slate-800 pb-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div>
                     <h2 class="text-base font-bold text-white flex items-center gap-2">💵 Secretaria: Controle e Inscrições (Pagamentos)</h2>
-                    <p class="text-xs text-slate-400 mt-0.5">Lista gerada automaticamente para a secretaria conferir recebimentos e dar o OK (protegido por senha).</p>
+                    <p class="text-xs text-slate-400 mt-0.5">Listas divididas por modalidade e categorias (A, B, etc.) com todos os atletas e componentes visíveis para cobrança.</p>
                 </div>
                 <div class="flex items-center gap-2 no-print">
                     <button onclick="alternarVisibilidadeSecretaria()" id="btn-toggle-secretaria" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold transition shadow-sm flex items-center gap-1.5">
@@ -165,7 +168,7 @@
                     </button>
                 </div>
             </div>
-            <div id="tabela-universal" class="overflow-x-auto pt-1 transition-all duration-300"></div>
+            <div id="tabela-universal" class="space-y-6 transition-all duration-300"></div>
         </section>
 
         <!-- Seção 2: Cadastro de Modalidades -->
@@ -520,7 +523,7 @@
                 if (novoTime === null) return;
                 let novosAtletas = prompt("Editar Elenco / Integrantes:", p.nomesAtletas);
                 if (novosAtletas === null) return;
-                let novaCat = prompt("Editar Categoria (Ex: Sub-12, Sub-15, Geral):", p.categoria);
+                let novaCat = prompt("Editar Categoria (Ex: A, B, Sub-15):", p.categoria);
                 if (novaCat === null) return;
 
                 if (novoTime.trim() !== "") {
@@ -738,58 +741,82 @@
                 divResumoBusca.classList.add('hidden');
             }
 
-            let gerarTabelaHtml = () => {
-                if (ev.atletasGeral.length === 0) {
-                    return `<p class="text-xs text-slate-500 italic py-3 text-center">Nenhum participante adicionado nas modalidades ainda. Cadastre participantes nas modalidades abaixo para visualizá-los aqui.</p>`;
+            // Geração da Secretaria Separada por Modalidade e por Categoria (A, B, etc.)
+            let gerarTabelaSecretariaHtml = () => {
+                if (ev.modalidades.length === 0) {
+                    return `<p class="text-xs text-slate-500 italic py-3 text-center">Nenhuma modalidade cadastrada ainda. Crie modalidades abaixo para gerar o controle da secretaria.</p>`;
                 }
-                let html = `<table class="w-full text-left text-xs border-collapse">
-                    <thead>
-                        <tr class="border-b border-slate-800 text-slate-400 font-semibold">
-                            <th class="py-2.5 px-2">Participante / Atleta / Equipe e Integrantes</th>
-                            <th class="py-2.5 px-2">Modalidade(s) Vinculada(s)</th>
-                            <th class="py-2.5 px-2 text-center">Status da Inscrição (Taxa)</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
-                
-                ev.atletasGeral.forEach(a => {
-                    let modsDoAtleta = [];
-                    let listaElencos = [];
 
-                    ev.modalidades.forEach(m => {
-                        m.participantes.forEach(p => {
-                            if (p.nomeEquipe.toLowerCase() === a.nome.toLowerCase() || (p.nomesAtletas && p.nomesAtletas.toLowerCase().includes(a.nome.toLowerCase()))) {
-                                if (!modsDoAtleta.includes(m.nome)) {
-                                    modsDoAtleta.push(m.nome);
-                                }
-                                if (p.nomesAtletas && p.nomesAtletas.trim() !== "" && !listaElencos.includes(p.nomesAtletas)) {
-                                    listaElencos.push(p.nomesAtletas);
-                                }
-                            }
-                        });
+                let htmlGeral = "";
+
+                ev.modalidades.forEach(mod => {
+                    // Agrupar participantes desta modalidade por Categoria (ex: A, B, Geral...)
+                    let categoriasMap = {};
+                    mod.participantes.forEach(p => {
+                        let cat = (p.categoria || 'Geral').trim().toUpperCase();
+                        if (!categoriasMap[cat]) categoriasMap[cat] = [];
+                        categoriasMap[cat].push(p);
                     });
 
-                    let modsTexto = modsDoAtleta.length > 0 ? modsDoAtleta.join(', ') : '<span class="text-slate-600 italic">Nenhuma</span>';
-                    let elencoTexto = listaElencos.length > 0 ? `<span class="text-slate-400 text-[11px] block mt-0.5">👥 Elenco/Componentes: ${listaElencos.join(' | ')}</span>` : '';
+                    let catChaves = Object.keys(categoriasMap).sort();
 
-                    let badgeBtn = a.status === 'pago' ? 
-                        `<button onclick="alterarStatusTaxaAtleta(${a.id})" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-semibold transition">Pago 🟢 (Exige Senha)</button>` : 
-                        `<button onclick="alterarStatusTaxaAtleta(${a.id})" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full font-semibold transition">Pendente 🔴 (Exige Senha)</button>`;
-                    
-                    html += `<tr class="border-b border-slate-800/60 hover:bg-slate-950/40 transition">
-                        <td class="py-3 px-2 font-medium text-slate-200">
-                            <div>${a.nome}</div>
-                            ${elencoTexto}
-                        </td>
-                        <td class="py-3 px-2 text-slate-400">${modsTexto}</td>
-                        <td class="py-3 px-2 text-center">${badgeBtn}</td>
-                    </tr>`;
+                    catChaves.forEach(cat => {
+                        let participantesDaCat = categoriasMap[cat];
+
+                        htmlGeral += `
+                            <div class="bg-slate-950/60 border border-slate-800 p-4 rounded-2xl space-y-3">
+                                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                                    <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-wider">📋 ${mod.nome} — Categoria: ${cat}</h3>
+                                    <span class="text-[10px] text-slate-400 bg-slate-900 px-2.5 py-0.5 rounded-full border border-slate-800">${participantesDaCat.length} inscrito(s)</span>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-xs border-collapse">
+                                        <thead>
+                                            <tr class="border-b border-slate-800/80 text-slate-400 font-semibold">
+                                                <th class="py-2 px-2">Participante / Equipe</th>
+                                                <th class="py-2 px-2">Elenco / Componentes / Atletas</th>
+                                                <th class="py-2 px-2 text-center">Status da Taxa</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                        `;
+
+                        participantesDaCat.forEach(p => {
+                            // Buscar o status de pagamento na tabela geral
+                            let itemGeral = ev.atletasGeral.find(ag => ag.nome.toLowerCase() === p.nomeEquipe.toLowerCase());
+                            let statusPago = itemGeral ? itemGeral.status : 'pendente';
+                            let idGeral = itemGeral ? itemGeral.id : null;
+
+                            let badgeBtn = statusPago === 'pago' ? 
+                                `<button onclick="alterarStatusTaxaAtleta(${idGeral})" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full font-semibold transition">Pago 🟢</button>` : 
+                                `<button onclick="alterarStatusTaxaAtleta(${idGeral})" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-full font-semibold transition">Pendente 🔴</button>`;
+
+                            let elencoFormatado = p.nomesAtletas && p.nomesAtletas.trim() !== "" ? 
+                                `<span class="text-slate-300">${p.nomesAtletas}</span>` : 
+                                `<span class="text-slate-600 italic">Individual / Nenhum componente listado</span>`;
+
+                            htmlGeral += `
+                                <tr class="border-b border-slate-800/40 hover:bg-slate-900/40">
+                                    <td class="py-2.5 px-2 font-bold text-slate-200 w-3/12">${p.nomeEquipe}</td>
+                                    <td class="py-2.5 px-2 text-slate-400 w-6/12 leading-relaxed">${elencoFormatado}</td>
+                                    <td class="py-2.5 px-2 text-center w-3/12">${badgeBtn}</td>
+                                </tr>
+                            `;
+                        });
+
+                        htmlGeral += `
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        `;
+                    });
                 });
-                html += `</tbody></table>`;
-                return html;
+
+                return htmlGeral;
             };
 
-            document.getElementById('tabela-universal').innerHTML = gerarTabelaHtml();
+            document.getElementById('tabela-universal').innerHTML = gerarTabelaSecretariaHtml();
 
             let modContainer = document.getElementById('modalidades-container');
             let relatorioConteudo = document.getElementById('relatorio-conteudo');
@@ -825,7 +852,7 @@
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                                 <input type="text" id="input-mod-atleta-nat-${mod.id}" placeholder="Nome do Nadador" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <input type="text" id="input-mod-cat-nat-${mod.id}" placeholder="Categoria (Ex: Sub-12, Sub-15, Geral)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <input type="text" id="input-mod-cat-nat-${mod.id}" placeholder="Categoria (Ex: A, B, Sub-15)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             </div>
                             <button onclick="adicionarParticipanteMod(${mod.id})" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition shadow-lg shadow-indigo-600/20">Adicionar Nadador</button>
                         </div>
@@ -836,7 +863,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                                 <input type="text" id="input-mod-equipe-${mod.id}" placeholder="${mod.tipo === 'individual' ? 'Nome do Atleta / Lutador' : 'Nome da Equipe'}" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                 <input type="text" id="input-mod-atletas-${mod.id}" placeholder="Elenco / Integrantes (Opcional)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <input type="text" id="input-mod-cat-${mod.id}" placeholder="Categoria (Ex: Sub-12, Sub-15, Geral)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <input type="text" id="input-mod-cat-${mod.id}" placeholder="Categoria (Ex: A, B, Sub-15)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             </div>
                             <button onclick="adicionarParticipanteMod(${mod.id})" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition shadow-lg shadow-indigo-600/20">Adicionar à Modalidade</button>
                         </div>
@@ -856,7 +883,7 @@
                                 <div>
                                     <span class="font-semibold text-slate-200">${p.nomeEquipe}</span> ${badgeTaxa}
                                     ${p.nomesAtletas ? `<span class="text-slate-400 text-[11px] block">Elenco: ${p.nomesAtletas}</span>` : ''}
-                                    <span class="text-[10px] text-indigo-400 font-medium">(${p.categoria || 'Geral'})</span>
+                                    <span class="text-[10px] text-indigo-400 font-medium">Categoria: ${p.categoria || 'Geral'}</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <button onclick="editarParticipanteMod(${mod.id}, ${idx})" class="text-slate-400 hover:text-slate-200 transition">✏️</button>
@@ -896,7 +923,7 @@
                                                     <div class="flex justify-between items-center bg-slate-950/80 px-3 py-1.5 rounded-xl border border-slate-800/60 text-xs">
                                                         <div class="flex items-center gap-2">
                                                             <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-bold text-indigo-300">Pos ${nad.posicaoNaBateria}</span>
-                                                            <span class="font-medium text-slate-200">${nad.nomeEquipe} <span class="text-[10px] text-slate-400">(${nad.categoria || 'Geral'})</span></span>
+                                                            <span class="font-medium text-slate-200">${nad.nomeEquipe} <span class="text-[10px] text-slate-400">(Cat: ${nad.categoria || 'Geral'})</span></span>
                                                         </div>
                                                         <input type="text" value="${nad.tempo || ''}" oninput="atualizarTempoNadadorBateria(${mod.id}, ${bIdx}, ${nIdx}, this.value)" placeholder="00:54.20" class="bg-slate-900 border border-slate-800 text-xs text-slate-200 rounded-xl px-3 py-1 w-28 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                                     </div>
@@ -915,7 +942,7 @@
                         <div class="bg-slate-950/40 p-2.5 rounded-xl border border-slate-800 space-y-1 text-xs">
                             <p class="font-bold text-indigo-400">Bateria ${bat.numeroBateria}:</p>
                             <ul class="list-disc pl-4 space-y-0.5 text-slate-300">
-                                ${bat.nadadores.map(n => `<li>Atleta ${n.posicaoNaBateria} - ${n.nomeEquipe} (${n.categoria || 'Geral'}) — Tempo: <strong>${n.tempo || 'Não informado'}</strong></li>`).join('')}
+                                ${bat.nadadores.map(n => `<li>Atleta ${n.posicaoNaBateria} - ${n.nomeEquipe} (Cat: ${n.categoria || 'Geral'}) — Tempo: <strong>${n.tempo || 'Não informado'}</strong></li>`).join('')}
                             </ul>
                         </div>
                     `).join('') : '<p class="text-xs text-slate-500 italic">Nenhuma bateria gerada.</p>';
@@ -1120,7 +1147,7 @@
 
                 let relatorioParticipantesTexto = mod.participantes.map(p => `
                     <div class="border-b border-slate-800/40 py-1">
-                        <strong>${p.nomeEquipe}</strong> (${p.categoria || 'Geral'}) ${p.nomesAtletas ? '— Elenco: ' + p.nomesAtletas : ''}
+                        <strong>${p.nomeEquipe}</strong> (Categoria: ${p.categoria || 'Geral'}) ${p.nomesAtletas ? '— Elenco: ' + p.nomesAtletas : ''}
                     </div>
                 `).join('') || 'Nenhum participante';
 
