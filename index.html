@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestor de Torneios Pro - Multi-Eventos</title>
     <meta name="theme-color" content="#0f172a">
+    <!-- Link para o Manifest permitindo a instalação do PWA -->
+    <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print {
@@ -198,6 +200,15 @@
 
     <!-- Scripts da Lógica -->
     <script>
+        // Registro do Service Worker para permitir a instalação e uso offline
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker registrado com sucesso:', reg.scope))
+                    .catch(err => console.log('Falha ao registrar o Service Worker:', err));
+            });
+        }
+
         let bancoGeral = JSON.parse(localStorage.getItem('torneio_banco_multieventos_v3')) || {
             eventoAtivoId: 'default_1',
             eventos: {
