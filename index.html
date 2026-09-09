@@ -743,14 +743,18 @@
             return resultado;
         }
 
+        // CORREÇÃO APLICADA AQUI: Usa salvamento silencioso e agendado para evitar perda de foco ao digitar
         function atualizarPodio(modId, campo, valor, indexTerceiro = null) {
             let ev = getEventoAtual();
             let mod = ev.modalidades.find(m => m.id === modId);
             if (!mod.podio) mod.podio = { campeao: "", vice: "", terceiros: [""] };
+            
             if (campo === 'campeao') mod.podio.campeao = valor;
             else if (campo === 'vice') mod.podio.vice = valor;
             else if (campo === 'terceiro') mod.podio.terceiros[indexTerceiro] = valor;
-            salvarBanco(true);
+            
+            salvarBanco(false);
+            agendarAtualizacaoAuto(modId);
         }
 
         function adicionarTerceiroLugar(modId) {
@@ -758,7 +762,7 @@
             let mod = ev.modalidades.find(m => m.id === modId);
             if (!mod.podio) mod.podio = { campeao: "", vice: "", terceiros: [""] };
             mod.podio.terceiros.push("");
-            salvarBanco();
+            salvarBanco(true);
         }
 
         function removerTerceiroLugar(modId, index) {
@@ -766,7 +770,7 @@
             let mod = ev.modalidades.find(m => m.id === modId);
             if (mod.podio && mod.podio.terceiros.length > 1) {
                 mod.podio.terceiros.splice(index, 1);
-                salvarBanco();
+                salvarBanco(true);
             }
         }
 
