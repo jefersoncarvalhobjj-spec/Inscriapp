@@ -140,6 +140,22 @@
         </div>
     </div>
 
+    <!-- Modal de Resumo por Série / Categoria -->
+    <div id="modal-resumo-serie" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-2xl max-w-2xl w-full space-y-4 max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h2 class="text-sm font-bold text-white flex items-center gap-2">📊 Resumo de Alunos por Série / Categoria</h2>
+                <button onclick="fecharModalResumoSerie()" class="text-slate-400 hover:text-white text-xs">✕</button>
+            </div>
+            <div id="conteudo-resumo-serie" class="overflow-y-auto space-y-4 flex-grow pr-1">
+                <!-- Gerado via JS -->
+            </div>
+            <div class="pt-2 border-t border-slate-800 flex justify-end">
+                <button onclick="fecharModalResumoSerie()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-xs font-semibold transition">Fechar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Conteúdo Principal -->
     <main class="max-w-4xl mx-auto p-4 md:p-6 flex-grow w-full space-y-6">
 
@@ -218,7 +234,10 @@
                     <h2 class="text-base font-bold text-white flex items-center gap-2">💵 Secretaria: Controle e Inscrições (Pagamentos)</h2>
                     <p class="text-xs text-slate-400 mt-0.5">Listas divididas por modalidade e categorias (A, B, etc.) com todos os atletas e componentes visíveis para cobrança.</p>
                 </div>
-                <div class="flex items-center gap-2 no-print">
+                <div class="flex flex-wrap items-center gap-2 no-print">
+                    <button onclick="abrirModalResumoSerie()" class="bg-violet-600 hover:bg-violet-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition shadow-lg shadow-violet-600/20 flex items-center gap-1.5 whitespace-nowrap">
+                        📊 Resumo por Série / Categoria
+                    </button>
                     <button onclick="alternarVisibilidadeSecretaria()" id="btn-toggle-secretaria" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold transition shadow-sm flex items-center gap-1.5">
                         👁️ Ocultar Lista
                     </button>
@@ -431,6 +450,103 @@
             document.getElementById('modal-novo-evento').classList.add('hidden');
         }
 
+        function abrirModalResumoSerie() {
+            renderizarResumoSerie();
+            document.getElementById('modal-resumo-serie').classList.remove('hidden');
+        }
+
+        function fecharModalResumoSerie() {
+            document.getElementById('modal-resumo-serie').classList.add('hidden');
+        }
+
+        function renderizarResumoSerie() {
+            let ev = getEventoAtual();
+            let container = document.getElementById('conteudo-resumo-serie');
+            
+            // Mapear cada aluno/atleta/equipe e suas respectivas modalidades e categorias
+            let dadosAlunos = {}; // Chave: nome do aluno/equipe (normalizado) -> { nomeOriginal, categorias: Set, modalidades: Set, qtdMod: number }
+
+            ev.modalidades.forEach(mod => {
+                mod.participantes.forEach(p => {
+                    if (!p.nomeEquipe) return;
+                    let nomeAluno = p.nomeEquipe.trim();
+                    let chaveAluno = nomeAluno.toLowerCase();
+                    let categoria = (p.categoria || 'Geral').trim();
+
+                    if (!dadosAlunos[chaveAluno]) {
+                        dadosAlunos[chaveAluno] = {
+                            nomeOriginal: nomeAluno,
+                            categorias: new Set(),
+                            modalidades: new Set()
+                        };
+                    }
+                    dadosAlunos[chaveAluno].categorias.add(categoria);
+                    dadosAlunos[chaveAluno].modalidades.add(mod.nome);
+                });
+            });
+
+            let listaAlunosArr = Object.values(dadosAlunos).map(aluno => ({
+                nome: aluno.nomeOriginal,
+                categorias: Array.from(aluno.categorias),
+                modalidades: Array.from(aluno.modalidades),
+                totalModalidades: aluno.modalidades.size
+            }));
+
+            if (listaAlunosArr.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-6">Nenhum aluno ou participante inscrito cadastrado nas modalidades ainda.</p>`;
+                return;
+            }
+
+            // Agrupar por Categoria / Série principal
+            let porCategoriaMap = {};
+            listaAlunosArr.forEach(aluno => {
+                aluno.categorias.forEach(cat => {
+                    let catUpper = cat.toUpperCase();
+                    if (!porCategoriaMap[catUpper]) porCategoriaMap[catUpper] = [];
+                    porCategoriaMap[catUpper].push(aluno);
+                });
+            });
+
+            let catsOrdenadas = Object.keys(porCategoriaMap).sort();
+
+            let htmlResumo = "";
+            catsOrdenadas.forEach(cat => {
+                let alunosDaCat = porCategoriaMap[cat];
+                // Ordenar por nome do aluno
+                alunosDaCat.sort((a, b) => a.nome.localeCompare(b.nome));
+
+                htmlResumo += `
+                    <div class="bg-slate-950/70 border border-slate-800 p-4 rounded-2xl space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-wider">🏷️ Série / Categoria: ${cat}</h3>
+                            <span class="text-[10px] text-slate-300 bg-slate-900 px-2.5 py-0.5 rounded-full border border-slate-800 font-semibold">${alunosDaCat.length} aluno(s)</span>
+                        </div>
+                        <div class="space-y-2">
+                `;
+
+                alunosDaCat.forEach(aluno => {
+                    htmlResumo += `
+                        <div class="bg-slate-900/80 border border-slate-800/60 p-3 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-2 text-xs">
+                            <div>
+                                <span class="font-bold text-slate-200 block md:inline">${aluno.nome}</span>
+                                <span class="text-[11px] text-slate-400 block md:inline md:ml-2">Modalidades: <strong class="text-slate-300">${aluno.modalidades.join(', ')}</strong></span>
+                            </div>
+                            <div class="bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 px-2.5 py-1 rounded-lg font-bold text-center whitespace-nowrap">
+                                ${aluno.totalModalidades} modalidade(s)
+                            </div>
+                        </div>
+                    `;
+                });
+
+                htmlResumo += `
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = htmlResumo;
+        }
+
         function criarNovoEvento() {
             let nome = document.getElementById('input-novo-nome-evento').value.trim();
             if (!nome) return alert('Digite o nome do evento/escola!');
@@ -596,7 +712,7 @@
                 if (novoTime === null) return;
                 let novosAtletas = prompt("Editar Elenco / Integrantes:", p.nomesAtletas);
                 if (novosAtletas === null) return;
-                let novaCat = prompt("Editar Categoria (Ex: A, B, Sub-15):", p.categoria);
+                let novaCat = prompt("Editar Categoria / Série (Ex: 6º ano, 7º ano, A, B):", p.categoria);
                 if (novaCat === null) return;
 
                 if (novoTime.trim() !== "") {
@@ -770,16 +886,15 @@
             }
         }
 
-        // Função inteligente para somar a quantidade real de atletas/componentes para compra de medalhas
         function contarAtletasEquipe(mod, nomeEquipe) {
             if (!nomeEquipe || !nomeEquipe.trim()) return 0;
             let nomeLimpo = nomeEquipe.trim().toLowerCase();
             let p = mod.participantes.find(part => part.nomeEquipe.trim().toLowerCase() === nomeLimpo);
-            if (!p) return 1; // Se for um nome avulso sem cadastro detalhado, conta como 1
+            if (!p) return 1;
             
             if (!p.nomesAtletas || p.nomesAtletas.trim() === "") return 1;
             let lista = p.nomesAtletas.split(/[,;]+/).filter(item => item.trim() !== "");
-            return Math.max(1, lista.length + 1); // 1 do líder/nome + quantidade de integrantes listados
+            return Math.max(1, lista.length + 1);
         }
 
         function calcularQuadroGeral() {
@@ -797,7 +912,6 @@
             ev.modalidades.forEach(mod => {
                 if (!mod.podio) return;
 
-                // 1º Lugar (Campeão) -> 9 pontos
                 if (mod.podio.campeao && mod.podio.campeao.trim() !== "") {
                     let champ = mod.podio.campeao.trim();
                     if (!equipesMap[champ]) equipesMap[champ] = { nome: champ, ouro: 0, prata: 0, bronze: 0, pontos: 0, medalhasFisicasOuro: 0, medalhasFisicasPrata: 0, medalhasFisicasBronze: 0 };
@@ -810,7 +924,6 @@
                     totalOuroFisico += qtdMembros;
                 }
 
-                // 2º Lugar (Vice) -> 6 pontos
                 if (mod.podio.vice && mod.podio.vice.trim() !== "") {
                     let vice = mod.podio.vice.trim();
                     if (!equipesMap[vice]) equipesMap[vice] = { nome: vice, ouro: 0, prata: 0, bronze: 0, pontos: 0, medalhasFisicasOuro: 0, medalhasFisicasPrata: 0, medalhasFisicasBronze: 0 };
@@ -823,7 +936,6 @@
                     totalPrataFisico += qtdMembros;
                 }
 
-                // 3º Lugares (Suporta múltiplos terceiros lugares) -> 3 pontos cada
                 if (mod.podio.terceiros && Array.isArray(mod.podio.terceiros)) {
                     mod.podio.terceiros.forEach(t => {
                         if (t && t.trim() !== "") {
@@ -896,7 +1008,6 @@
                 divResumoBusca.classList.add('hidden');
             }
 
-            // Renderizar Calculadora e Quadro Geral
             let dadosQuadro = calcularQuadroGeral();
             document.getElementById('calc-ouro-total').innerText = dadosQuadro.totalOuroFisico;
             document.getElementById('calc-prata-total').innerText = dadosQuadro.totalPrataFisico;
@@ -917,7 +1028,6 @@
                 `).join('');
             }
 
-            // Secretaria Separada por Modalidade e Categoria
             let gerarTabelaSecretariaHtml = () => {
                 if (ev.modalidades.length === 0) {
                     return `<p class="text-xs text-slate-500 italic py-3 text-center">Nenhuma modalidade cadastrada ainda. Crie modalidades abaixo para gerar o controle da secretaria.</p>`;
@@ -941,7 +1051,7 @@
                         htmlGeral += `
                             <div class="bg-slate-950/60 border border-slate-800 p-4 rounded-2xl space-y-3">
                                 <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                                    <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-wider">📋 ${mod.nome} — Categoria: ${cat}</h3>
+                                    <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-wider">📋 ${mod.nome} — Categoria/Série: ${cat}</h3>
                                     <span class="text-[10px] text-slate-400 bg-slate-900 px-2.5 py-0.5 rounded-full border border-slate-800">${participantesDaCat.length} inscrito(s)</span>
                                 </div>
                                 <div class="overflow-x-auto">
@@ -1026,7 +1136,7 @@
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                                 <input type="text" id="input-mod-atleta-nat-${mod.id}" placeholder="Nome do Nadador" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <input type="text" id="input-mod-cat-nat-${mod.id}" placeholder="Categoria (Ex: A, B, Sub-15)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <input type="text" id="input-mod-cat-nat-${mod.id}" placeholder="Categoria / Série (Ex: 6º, 7º, A, B)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             </div>
                             <button onclick="adicionarParticipanteMod(${mod.id})" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition shadow-lg shadow-indigo-600/20">Adicionar Nadador</button>
                         </div>
@@ -1037,7 +1147,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                                 <input type="text" id="input-mod-equipe-${mod.id}" placeholder="${mod.tipo === 'individual' ? 'Nome do Atleta / Lutador' : 'Nome da Equipe'}" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                 <input type="text" id="input-mod-atletas-${mod.id}" placeholder="Elenco / Integrantes (Opcional)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <input type="text" id="input-mod-cat-${mod.id}" placeholder="Categoria (Ex: A, B, Sub-15)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <input type="text" id="input-mod-cat-${mod.id}" placeholder="Categoria / Série (Ex: 6º, 7º, A, B)" class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             </div>
                             <button onclick="adicionarParticipanteMod(${mod.id})" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition shadow-lg shadow-indigo-600/20">Adicionar à Modalidade</button>
                         </div>
@@ -1057,7 +1167,7 @@
                                 <div>
                                     <span class="font-semibold text-slate-200">${p.nomeEquipe}</span> ${badgeTaxa}
                                     ${p.nomesAtletas ? `<span class="text-slate-400 text-[11px] block">Elenco: ${p.nomesAtletas}</span>` : ''}
-                                    <span class="text-[10px] text-indigo-400 font-medium">Categoria: ${p.categoria || 'Geral'}</span>
+                                    <span class="text-[10px] text-indigo-400 font-medium">Categoria/Série: ${p.categoria || 'Geral'}</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <button onclick="editarParticipanteMod(${mod.id}, ${idx})" class="text-slate-400 hover:text-slate-200 transition">✏️</button>
