@@ -750,7 +750,7 @@
             if (campo === 'campeao') mod.podio.campeao = valor;
             else if (campo === 'vice') mod.podio.vice = valor;
             else if (campo === 'terceiro') mod.podio.terceiros[indexTerceiro] = valor;
-            salvarBanco(true);
+            agendarAtualizacaoAuto(modId);
         }
 
         function adicionarTerceiroLugar(modId) {
